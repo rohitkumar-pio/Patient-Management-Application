@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// User model for authentication
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("DOCTOR") // DOCTOR, ADMIN, STAFF
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// Patient model for patient information
+model Patient {
+  id          String    @id @default(uuid())
+  name        String
+  age         Int?
+  dateOfBirth DateTime?
+  gender      String? // Male, Female, Other
+  phone       String    @unique
+  address     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  visits       Visit[]
+  appointments Appointment[]
+
+  @@index([phone])
+  @@index([name])
+  @@map("patients")
+}
+
+// Visit model for consultation records
+model Visit {
+  id            String   @id @default(uuid())
+  patientId     String
+  complaints    String // Symptoms/Chief complaints
+  diagnosis     String? // Doctor's diagnosis
+  temperature   Float? // In Celsius
+  bloodPressure String? // Format: "120/80"
+  pulse         Int? // Beats per minute
+  visitDate     DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  patient     Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  medications Medication[]
+
+  @@index([patientId])
+  @@index([visitDate])
+  @@map("visits")
+}
+
+// Medication model for prescriptions
+model Medication {
+  id           String   @id @default(uuid())
+  visitId      String
+  name         String // Medication name
+  dosage       String // e.g., "500mg", "2 tablets"
+  frequency    String // e.g., "Twice daily", "Every 8 hours"
+  duration     String // e.g., "5 days", "2 weeks"
+  instructions String? // e.g., "After meals"
+  createdAt    DateTime @default(now())
+
+  // Relations
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+
+  @@index([visitId])
+  @@map("medications")
+}
+
+// Appointment model for scheduling
+model Appointment {
+  id              String   @id @default(uuid())
+  patientId       String
+  appointmentDate DateTime
+  status          String   @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED, NO_SHOW
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([appointmentDate])
+  @@map("appointments")
+}
