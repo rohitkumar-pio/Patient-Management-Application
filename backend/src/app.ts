@@ -1,26 +1,35 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
+import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+import { requestLogger } from './middleware/requestLogger';
 
 // Load environment variables
 dotenv.config();
 
 const app: Application = express();
 
+// Request logging middleware (before other middleware)
+if (process.env.NODE_ENV !== 'production') {
+  app.use(requestLogger);
+}
+
 // Security middleware
 app.use(helmet());
 
-// CORS configuration
+// CORS configuration - allow frontend origin
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Body parser middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Health check endpoint
 app.get('/api/health', (_req: Request, res: Response) => {
@@ -46,25 +55,10 @@ app.get('/', (_req: Request, res: Response) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 
-// 404 handler
-app.use((_req: Request, res: Response) => {
-  res.status(404).json({
-    status: 'error',
-    message: 'Route not found'
-  });
-});
+// 404 handler - must be after all routes
+app.use(notFoundHandler);
 
-// Global error handler
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  console.error('Error:', err.message);
-  console.error(err.stack);
-  
-  res.status(500).json({
-    status: 'error',
-    message: process.env.NODE_ENV === 'production' 
-      ? 'Internal server error' 
-      : err.message
-  });
-});
+// Global error handler - must be last
+app.use(errorHandler);
 
 export default app;
