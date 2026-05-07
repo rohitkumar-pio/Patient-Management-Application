@@ -9,7 +9,12 @@
     "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["patient-management", "healthcare", "express", "typescript"],
+  "keywords": [
+    "patient-management",
+    "healthcare",
+    "express",
+    "typescript"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
