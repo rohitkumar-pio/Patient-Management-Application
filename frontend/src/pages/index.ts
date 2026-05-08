@@ -1,3 +1,3 @@
 // Page components
 export { default as Login } from './Login';
-export { default as Dashboard } from './Dashboard';
+export { Dashboard } from './Dashboard';
