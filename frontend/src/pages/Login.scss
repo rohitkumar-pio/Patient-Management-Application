@@ -1,0 +1,449 @@
+// Login Page SCSS - Modern, Maintainable Styles
+
+// ========================================
+// Variables
+// ========================================
+
+// Colors
+$color-primary: #3b82f6;
+$color-primary-dark: #2563eb;
+$color-primary-darker: #1d4ed8;
+$color-primary-light: #60a5fa;
+$color-primary-lighter: #93c5fd;
+$color-primary-pale: #bfdbfe;
+$color-primary-palest: #dbeafe;
+
+$color-text-primary: #1e293b;
+$color-text-secondary: #64748b;
+$color-text-error: #dc2626;
+$color-error: #ef4444;
+$color-error-bg: #fef2f2;
+$color-error-light: #fee2e2;
+
+$color-white: #ffffff;
+$color-gray-200: #e2e8f0;
+$color-gray-300: #cbd5e1;
+$color-gray-400: #94a3b8;
+$color-gray-700: #334155;
+
+// Spacing
+$spacing-xs: 0.25rem;
+$spacing-sm: 0.5rem;
+$spacing-md: 1rem;
+$spacing-lg: 1.5rem;
+$spacing-xl: 2rem;
+$spacing-2xl: 3rem;
+
+// Border Radius
+$radius-sm: 0.375rem;
+$radius-md: 0.75rem;
+$radius-lg: 1.5rem;
+$radius-full: 50%;
+
+// Transitions
+$transition-fast: 0.2s ease;
+$transition-normal: 0.3s ease;
+$transition-slow: 0.6s ease;
+
+// Font Sizes
+$font-xs: 0.75rem;
+$font-sm: 0.875rem;
+$font-base: 1rem;
+$font-lg: 1.125rem;
+$font-xl: 1.25rem;
+$font-2xl: 1.5rem;
+$font-3xl: 1.875rem;
+
+// ========================================
+// Mixins
+// ========================================
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin gradient-primary {
+  background: linear-gradient(135deg, $color-primary, $color-primary-dark);
+}
+
+@mixin gradient-bg {
+  background: linear-gradient(135deg, $color-primary-palest 0%, #eff6ff 50%, #e0f2fe 100%);
+}
+
+@mixin shadow-sm {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+@mixin shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+@mixin shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+@mixin shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+@mixin hover-lift {
+  transition: all $transition-normal;
+  
+  &:hover {
+    transform: translateY(-2px);
+    @include shadow-lg;
+  }
+}
+
+// ========================================
+// Login Container
+// ========================================
+
+.login-container {
+  min-height: 100vh;
+  @include flex-center;
+  @include gradient-bg;
+  padding: $spacing-lg;
+  animation: fadeIn $transition-slow ease-in;
+}
+
+// ========================================
+// Login Card
+// ========================================
+
+.login-card {
+  width: 100%;
+  max-width: 28rem;
+  background: rgba($color-white, 0.95);
+  backdrop-filter: blur(10px);
+  padding: $spacing-2xl $spacing-xl;
+  border-radius: $radius-lg;
+  @include shadow-xl;
+  animation: slideUp $transition-slow ease-out;
+}
+
+// ========================================
+// Login Logo
+// ========================================
+
+.login-logo {
+  width: 5rem;
+  height: 5rem;
+  margin: 0 auto $spacing-xl;
+  @include gradient-primary;
+  border-radius: $radius-full;
+  @include flex-center;
+  color: $color-white;
+  font-size: $font-3xl;
+  box-shadow: 0 10px 15px -3px rgba($color-primary, 0.3);
+  transition: transform $transition-normal;
+
+  &:hover {
+    transform: scale(1.05) rotate(5deg);
+  }
+}
+
+// ========================================
+// Login Title & Subtitle
+// ========================================
+
+.login-title {
+  text-align: center;
+  font-size: $font-3xl;
+  font-weight: 700;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.login-subtitle {
+  text-align: center;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-xl;
+  font-size: $font-sm;
+}
+
+// ========================================
+// Demo Credentials
+// ========================================
+
+.demo-credentials {
+  background: linear-gradient(135deg, $color-primary-palest, $color-primary-pale);
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-lg;
+  border-left: 4px solid $color-primary;
+
+  &-header {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    font-weight: 600;
+    color: $color-primary-darker;
+    margin-bottom: $spacing-sm;
+    font-size: $font-sm;
+  }
+
+  &-item {
+    display: inline-block;
+    background: $color-white;
+    padding: 0.375rem 0.75rem;
+    border-radius: $radius-sm;
+    font-size: $font-sm;
+    color: $color-primary-darker;
+    font-family: 'Courier New', monospace;
+    font-weight: 500;
+    border: 1px solid $color-primary-lighter;
+    margin: $spacing-xs $spacing-xs 0 0;
+    transition: all $transition-fast;
+
+    &:hover {
+      transform: scale(1.02);
+      box-shadow: 0 2px 4px rgba($color-primary, 0.2);
+    }
+  }
+}
+
+// ========================================
+// Form
+// ========================================
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.form-label {
+  font-weight: 600;
+  color: $color-gray-700;
+  font-size: $font-sm;
+
+  &-required::after {
+    content: "*";
+    color: $color-error;
+    margin-left: $spacing-xs;
+  }
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.875rem $spacing-md;
+  border: 1px solid $color-gray-300;
+  border-radius: $radius-md;
+  font-size: $font-base;
+  transition: all $transition-normal;
+  background: $color-white;
+
+  &:focus {
+    outline: none;
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.1);
+  }
+
+  &:hover {
+    border-color: $color-gray-400;
+    @include shadow-sm;
+  }
+
+  &-error {
+    border-color: $color-error;
+    background-color: $color-error-bg;
+
+    &:focus {
+      border-color: $color-text-error;
+      box-shadow: 0 0 0 3px rgba($color-error, 0.1);
+    }
+  }
+}
+
+// ========================================
+// Error Messages
+// ========================================
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: $color-text-error;
+  font-size: $font-sm;
+  margin-top: $spacing-xs;
+}
+
+.error-banner {
+  background: linear-gradient(135deg, $color-error-light, #fecaca);
+  border-left: 4px solid $color-error;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-lg;
+  animation: shake 0.5s ease-in-out;
+
+  &-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &-icon {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: $color-text-error;
+  }
+
+  &-text {
+    color: #991b1b;
+    font-weight: 500;
+    font-size: $font-sm;
+  }
+}
+
+// ========================================
+// Submit Button
+// ========================================
+
+.submit-button {
+  width: 100%;
+  padding: 0.875rem $spacing-lg;
+  @include gradient-primary;
+  color: $color-white;
+  font-weight: 600;
+  border: none;
+  border-radius: $radius-md;
+  font-size: $font-base;
+  cursor: pointer;
+  transition: all $transition-normal;
+  box-shadow: 0 4px 6px -1px rgba($color-primary, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, $color-primary-dark, $color-primary-darker);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba($color-primary, 0.4);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// ========================================
+// Spinner
+// ========================================
+
+.spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid rgba($color-white, 0.3);
+  border-top-color: $color-white;
+  border-radius: $radius-full;
+  animation: spin 0.6s linear infinite;
+}
+
+// ========================================
+// Footer
+// ========================================
+
+.login-footer {
+  margin-top: $spacing-lg;
+  text-align: center;
+
+  &-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+.login-link {
+  color: $color-primary;
+  text-decoration: none;
+  font-size: $font-sm;
+  font-weight: 500;
+  transition: all $transition-fast;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-xs;
+
+  &:hover {
+    color: $color-primary-dark;
+    text-decoration: underline;
+  }
+}
+
+// ========================================
+// Animations
+// ========================================
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ========================================
+// Responsive Design
+// ========================================
+
+@media (max-width: 640px) {
+  .login-card {
+    padding: $spacing-xl $spacing-md;
+  }
+
+  .login-title {
+    font-size: $font-2xl;
+  }
+
+  .login-logo {
+    width: 4rem;
+    height: 4rem;
+  }
+}

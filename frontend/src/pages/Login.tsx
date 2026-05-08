@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuthStore } from '../stores/authStore';
 import api from '../lib/api';
-import './Login.css';
+import './Login.scss';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),

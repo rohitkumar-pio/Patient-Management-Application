@@ -1,6 +1,6 @@
 import { useAuthStore } from '../stores/authStore';
 import { useNavigate } from 'react-router-dom';
-import './Dashboard.css';
+import './Dashboard.scss';
 import { useState } from 'react';
 
 export const Dashboard = () => {
