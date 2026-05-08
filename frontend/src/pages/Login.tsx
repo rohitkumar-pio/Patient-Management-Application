@@ -20,7 +20,6 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [activeTab, setActiveTab] = useState<'existing' | 'new'>('existing');
 
   const {
     register,
@@ -106,30 +105,6 @@ const Login: React.FC = () => {
                   </svg>
                 </div>
                 <span className="text-xl font-bold text-gray-900">MyHiHub</span>
-              </div>
-
-              {/* Tabs */}
-              <div className="flex space-x-2 mb-6">
-                <button
-                  onClick={() => setActiveTab('new')}
-                  className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    activeTab === 'new'
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  New Patient
-                </button>
-                <button
-                  onClick={() => setActiveTab('existing')}
-                  className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    activeTab === 'existing'
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  Existing Patient
-                </button>
               </div>
             </div>
 
