@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuthStore } from '../stores/authStore';
 import api from '../lib/api';
+import './Login.css';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -53,103 +54,122 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-blue-50 to-cyan-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md">
-        {/* Login Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl px-8 sm:px-10 py-12">
-          {/* User Icon */}
-          <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
-              <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-              </svg>
-            </div>
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 text-center mb-8">
-            User Login
-          </h2>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-700 text-sm">{error}</p>
-            </div>
-          )}
-
-          {/* Demo Credentials */}
-          <div className="mb-6 p-4 bg-blue-50/70 border border-blue-200 rounded-xl">
-            <p className="text-blue-800 text-xs sm:text-sm font-medium mb-2">✨ Demo Login:</p>
-            <p className="text-blue-700 text-xs sm:text-sm"><strong>Email:</strong> doctor@test.com</p>
-            <p className="text-blue-700 text-xs sm:text-sm"><strong>Password:</strong> password123</p>
-          </div>
-
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Email Field */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email *
-              </label>
-              <input
-                {...register('email')}
-                type="text"
-                id="email"
-                placeholder="doctor@test.com"
-                className={`w-full px-4 py-3.5 border ${
-                  errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
-                } rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-gray-900 placeholder-gray-400 shadow-sm`}
-              />
-              {errors.email && (
-                <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>
-              )}
-            </div>
-
-            {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password *
-              </label>
-              <input
-                {...register('password')}
-                type="password"
-                id="password"
-                placeholder="Enter your password"
-                className={`w-full px-4 py-3.5 border ${
-                  errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
-                } rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-gray-900 placeholder-gray-400 shadow-sm`}
-              />
-              {errors.password && (
-                <p className="mt-2 text-sm text-red-600">{errors.password.message}</p>
-              )}
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Logging in...
-                </span>
-              ) : 'Login'}
-            </button>
-
-            {/* Bottom Links */}
-            <div className="space-y-2 text-center text-sm pt-2">
-              <button
-                type="button"
-                className="text-gray-600 hover:text-blue-600 font-medium transition-colors"
-              >
-                Forgot Password?
-              </button>
-            </div>
-          </form>
+    <div className="login-container">
+      <div className="login-card">
+        {/* User Icon */}
+        <div className="login-logo">
+          <svg fill="currentColor" viewBox="0 0 20 20" style={{ width: '2.5rem', height: '2.5rem' }}>
+            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+          </svg>
         </div>
+
+        <h2 className="login-title">User Login</h2>
+        <p className="login-subtitle">Sign in to continue to Patient Management</p>
+
+        {/* Error Message */}
+        {error && (
+          <div className="error-banner">
+            <div className="error-banner-content">
+              <svg className="error-banner-icon" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <span className="error-banner-text">{error}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Demo Credentials */}
+        <div className="demo-credentials">
+          <p className="demo-credentials-header">
+            <svg style={{ width: '1rem', height: '1rem' }} fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            Demo Login
+          </p>
+          <div>
+            <span className="demo-credential-item">doctor@test.com</span>
+            <span className="demo-credential-item">password123</span>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="login-form">
+          {/* Email Field */}
+          <div className="form-group">
+            <label htmlFor="email" className="form-label form-label-required">
+              Email
+            </label>
+            <input
+              {...register('email')}
+              type="text"
+              id="email"
+              placeholder="doctor@test.com"
+              className={`form-input ${errors.email ? 'form-input-error' : ''}`}
+            />
+            {errors.email && (
+              <span className="error-message">
+                <svg style={{ width: '1rem', height: '1rem' }} fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                {errors.email.message}
+              </span>
+            )}
+          </div>
+
+          {/* Password Field */}
+          <div className="form-group">
+            <label htmlFor="password" className="form-label form-label-required">
+              Password
+            </label>
+            <input
+              {...register('password')}
+              type="password"
+              id="password"
+              placeholder="Enter your password"
+              className={`form-input ${errors.password ? 'form-input-error' : ''}`}
+            />
+            {errors.password && (
+              <span className="error-message">
+                <svg style={{ width: '1rem', height: '1rem' }} fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                {errors.password.message}
+              </span>
+            )}
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="submit-button"
+          >
+            {isLoading ? (
+              <>
+                <span className="spinner" />
+                Logging in...
+              </>
+            ) : (
+              <>
+                Login
+                <svg style={{ width: '1.25rem', height: '1.25rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </>
+            )}
+          </button>
+
+          {/* Bottom Links */}
+          <div className="login-footer">
+            <div className="login-footer-links">
+              <a href="#" className="login-link">
+                Reset password
+                <svg style={{ width: '1rem', height: '1rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
   );

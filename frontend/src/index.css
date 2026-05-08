@@ -11,6 +11,15 @@
     animation: shake 0.5s ease-in-out;
   }
 
+  .animate-wave {
+    animation: wave 1s ease-in-out infinite;
+  }
+
+  .animate-gradient-slow {
+    animation: gradient 15s ease infinite;
+    background-size: 200% 200%;
+  }
+
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -31,6 +40,30 @@
     }
     20%, 40%, 60%, 80% {
       transform: translateX(5px);
+    }
+  }
+
+  @keyframes wave {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(20deg);
+    }
+    75% {
+      transform: rotate(-10deg);
+    }
+  }
+
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
     }
   }
 }
