@@ -20,6 +20,7 @@
     "vite": "^8.0.10"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "@tanstack/react-query": "^5.100.9",
     "axios": "^1.16.0",
     "react": "^19.2.6",

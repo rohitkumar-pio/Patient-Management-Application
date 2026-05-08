@@ -1,2 +1,3 @@
-// Page components will be added here
-export {};
+// Page components
+export { default as Login } from './Login';
+export { default as Dashboard } from './Dashboard';

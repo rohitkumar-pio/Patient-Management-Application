@@ -1,2 +1,3 @@
-// Zustand stores will be added here
-export {};
+// Zustand stores
+export { useAuthStore } from './authStore';
+export type { User } from './authStore';

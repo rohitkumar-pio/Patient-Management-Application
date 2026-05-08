@@ -1,2 +1,2 @@
-// Reusable components will be added here
-export {};
+// Reusable components
+export { default as ProtectedRoute } from './ProtectedRoute';
