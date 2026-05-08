@@ -2,7 +2,7 @@
 
 .dashboard-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0f9ff 100%);
+  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 50%, #cffafe 100%);
 }
 
 /* Navigation Bar */
@@ -35,7 +35,7 @@
 .logo-icon {
   width: 2.5rem;
   height: 2.5rem;
-  background: linear-gradient(135deg, #ef4444, #ec4899);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   border-radius: 0.75rem;
   display: flex;
   align-items: center;
@@ -44,7 +44,7 @@
 }
 
 .logo-text {
-  background: linear-gradient(135deg, #ef4444, #ec4899);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -78,7 +78,7 @@
   right: 0.25rem;
   width: 0.5rem;
   height: 0.5rem;
-  background: #ef4444;
+  background: #3b82f6;
   border-radius: 50%;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -88,14 +88,14 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 1rem;
-  background: linear-gradient(135deg, #e0e7ff, #ddd6fe);
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
   border-radius: 0.75rem;
 }
 
 .user-avatar {
   width: 2.5rem;
   height: 2.5rem;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -123,7 +123,7 @@
 
 .logout-button {
   padding: 0.5rem 1rem;
-  background: linear-gradient(135deg, #ef4444, #ec4899);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -138,7 +138,7 @@
 
 .logout-button:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
 }
 
 /* Main Content */
@@ -171,7 +171,7 @@
 .welcome-title {
   font-size: 2.25rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -229,17 +229,17 @@
 
 /* Success Banner */
 .success-banner {
-  background: linear-gradient(135deg, #4ade80, #10b981);
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
   padding: 1rem 1.5rem;
   border-radius: 1rem;
   margin-bottom: 2rem;
-  box-shadow: 0 10px 15px -3px rgba(74, 222, 128, 0.3);
+  box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
   transition: all 0.3s ease;
 }
 
 .success-banner:hover {
   transform: translateY(-2px);
-  box-shadow: 0 20px 25px -5px rgba(74, 222, 128, 0.4);
+  box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.4);
 }
 
 .success-content {
@@ -306,19 +306,19 @@
 }
 
 .stat-card-blue {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
 }
 
 .stat-card-green {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
 }
 
 .stat-card-purple {
-  background: linear-gradient(135deg, #a855f7, #ec4899);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
 }
 
 .stat-card-orange {
-  background: linear-gradient(135deg, #f97316, #dc2626);
+  background: linear-gradient(135deg, #93c5fd, #60a5fa);
 }
 
 .stat-decorative-circle {
@@ -426,7 +426,7 @@
 .live-indicator {
   width: 0.5rem;
   height: 0.5rem;
-  background: #10b981;
+  background: #3b82f6;
   border-radius: 50%;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -472,8 +472,8 @@
 }
 
 .schedule-item-status {
-  background: #dcfce7;
-  color: #166534;
+  background: #dbeafe;
+  color: #1e40af;
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
   font-size: 0.75rem;
@@ -482,13 +482,13 @@
 
 /* Quick Stats Sidebar */
 .quick-stats-sidebar {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
   padding: 1.5rem;
   border-radius: 1.5rem;
   color: white;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
 }
 
 .sidebar-decorative-circle {
@@ -577,21 +577,21 @@
 }
 
 .feature-card-purple {
-  border-color: #e9d5ff;
+  border-color: #dbeafe;
 }
 
 .feature-card-purple:hover {
-  border-color: #a855f7;
-  background: linear-gradient(135deg, #faf5ff, white);
+  border-color: #2563eb;
+  background: linear-gradient(135deg, #dbeafe, white);
 }
 
 .feature-card-green {
-  border-color: #bbf7d0;
+  border-color: #93c5fd;
 }
 
 .feature-card-green:hover {
-  border-color: #10b981;
-  background: linear-gradient(135deg, #f0fdf4, white);
+  border-color: #60a5fa;
+  background: linear-gradient(135deg, #bfdbfe, white);
 }
 
 .feature-decorative-circle {
@@ -610,11 +610,11 @@
 }
 
 .feature-card-purple .feature-decorative-circle {
-  background: #a855f7;
+  background: #2563eb;
 }
 
 .feature-card-green .feature-decorative-circle {
-  background: #10b981;
+  background: #60a5fa;
 }
 
 .feature-card:hover .feature-decorative-circle {
@@ -643,11 +643,11 @@
 }
 
 .feature-icon-purple {
-  background: linear-gradient(135deg, #a855f7, #9333ea);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
 }
 
 .feature-icon-green {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
 }
 
 .feature-card:hover .feature-icon-wrapper {
@@ -690,13 +690,13 @@
 }
 
 .coming-soon-purple {
-  background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
-  color: #6b21a8;
+  background: linear-gradient(135deg, #bfdbfe, #93c5fd);
+  color: #1e3a8a;
 }
 
 .coming-soon-green {
-  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-  color: #065f46;
+  background: linear-gradient(135deg, #93c5fd, #60a5fa);
+  color: #1e3a8a;
 }
 
 .feature-card:hover .coming-soon-badge {
