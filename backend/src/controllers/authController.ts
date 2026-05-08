@@ -1,11 +1,10 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/database';
 import { generateToken } from '../utils/jwt';
 import { registerSchema, loginSchema, RegisterInput, LoginInput } from '../validators/authValidator';
 import { z } from 'zod';
 
-const prisma = new PrismaClient();
 const SALT_ROUNDS = 10;
 
 /**
