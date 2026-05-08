@@ -32,7 +32,8 @@ export default function Login() {
       setError('');
       setIsLoading(true);
       const response = await api.post('/auth/login', data);
-      login(response.data.token, response.data.user);
+      // Backend returns: { success, message, data: { user, token } }
+      login(response.data.data.token, response.data.data.user);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
