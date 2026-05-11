@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import PatientList from './pages/PatientList';
 import { NewPatient, EditPatient, PatientProfile } from './pages';
+import { NewVisitForm } from './pages/NewVisit/NewVisitForm';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ToastContainer } from './components';
 import { useAuthStore } from './stores/authStore';
@@ -67,6 +68,14 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <PatientProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/visits/new"
+            element={
+              <ProtectedRoute>
+                <NewVisitForm />
               </ProtectedRoute>
             }
           />
