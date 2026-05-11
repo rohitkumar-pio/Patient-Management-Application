@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import apiClient from '../lib/api';
 import type { Patient } from '../types';
 import './PatientForm.scss';
@@ -52,6 +53,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({
   onCancel 
 }) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string>('');
   const isEditMode = !!patient;
@@ -112,10 +114,15 @@ export const PatientForm: React.FC<PatientFormProps> = ({
         // Update existing patient
         await apiClient.put(`/patients/${patient.id}`, payload);
         showToast('Patient updated successfully', 'success');
+        // Invalidate queries to refresh data
+        queryClient.invalidateQueries({ queryKey: ['patients'] });
+        queryClient.invalidateQueries({ queryKey: ['patient', patient.id] });
       } else {
         // Create new patient
         await apiClient.post('/patients', payload);
         showToast('Patient created successfully', 'success');
+        // Invalidate patients list to show new patient
+        queryClient.invalidateQueries({ queryKey: ['patients'] });
       }
 
       if (onSuccess) {

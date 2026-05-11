@@ -1,9 +1,20 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { PatientForm } from '../../components/PatientForm';
 import '../PatientList.scss';
 import './NewPatient.scss';
 
 export const NewPatient: React.FC = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const handleSuccess = () => {
+    // Invalidate patients query to trigger refetch
+    queryClient.invalidateQueries({ queryKey: ['patients'] });
+    navigate('/patients');
+  };
+
   return (
     <div className="patient-list-layout">
       {/* Header */}
@@ -18,7 +29,7 @@ export const NewPatient: React.FC = () => {
 
       {/* Main Content */}
       <div className="new-patient-content">
-        <PatientForm />
+        <PatientForm onSuccess={handleSuccess} />
       </div>
     </div>
   );
