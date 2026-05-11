@@ -130,13 +130,16 @@
         }
 
         .error-message {
-          margin: 0.125rem 0 0 0;
+          margin: 0.25rem 0 0 0;
           padding: 0;
-          font-size: 0.625rem; // 10px - very small
+          font-size: 0.75rem; // 12px
           color: #dc2626;
-          font-weight: 500;
-          line-height: 1;
-          display: inline-block;
+          line-height: 1.2;
+          display: block;
+          border: none;
+          outline: none;
+          background: none;
+          box-shadow: none;
         }
 
         .help-text {
