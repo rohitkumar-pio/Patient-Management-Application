@@ -4,12 +4,30 @@ import { useNavigate } from 'react-router-dom';
 import apiClient from '../lib/api';
 import PatientSearch from '../components/PatientSearch';
 import { Patient, PaginatedResponse } from '../types';
+import { useAuthStore } from '../stores/authStore';
+import './PatientList.scss';
 
 const PatientList: React.FC = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeMenu, setActiveMenu] = useState('patients');
   const limit = 20;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  const menuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', route: '/dashboard' },
+    { id: 'patients', label: 'Patients', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', route: '/patients' },
+    { id: 'appointments', label: 'Appointments', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', route: '/appointments' },
+    { id: 'consultations', label: 'Consultations', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', route: '/consultations' },
+    { id: 'export', label: 'Export Data', icon: 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4', route: '/export' },
+    { id: 'reports', label: 'Reports', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', route: '/reports' },
+  ];
 
   // Fetch patients with React Query
   const { data, isLoading, isError, error } = useQuery({
@@ -64,13 +82,15 @@ const PatientList: React.FC = () => {
 
   // Loading skeleton
   const LoadingSkeleton = () => (
-    <div className="animate-pulse">
+    <div className="loading-skeleton">
       {[...Array(5)].map((_, index) => (
-        <div key={index} className="flex items-center space-x-4 py-4 border-b">
-          <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-          </div>
+        <div key={index} className="skeleton-row">
+          <div className="skeleton-item name"></div>
+          <div className="skeleton-item age"></div>
+          <div className="skeleton-item gender"></div>
+          <div className="skeleton-item phone"></div>
+          <div className="skeleton-item visits"></div>
+          <div className="skeleton-item action"></div>
         </div>
       ))}
     </div>
@@ -78,9 +98,9 @@ const PatientList: React.FC = () => {
 
   // Empty state
   const EmptyState = () => (
-    <div className="text-center py-12">
+    <div className="empty-state">
       <svg
-        className="mx-auto h-12 w-12 text-gray-400"
+        className="empty-icon"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -93,33 +113,27 @@ const PatientList: React.FC = () => {
           d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
         />
       </svg>
-      <h3 className="mt-2 text-sm font-medium text-gray-900">No patients found</h3>
-      <p className="mt-1 text-sm text-gray-500">
+      <h3 className="empty-title">No patients found</h3>
+      <p className="empty-description">
         {searchTerm ? 'Try adjusting your search' : 'Get started by adding a new patient'}
       </p>
       {!searchTerm && (
-        <div className="mt-6">
-          <button
-            onClick={handleAddPatient}
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        <button onClick={handleAddPatient} className="empty-action">
+          <svg
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            <svg
-              className="-ml-1 mr-2 h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            Add New Patient
-          </button>
-        </div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          Add New Patient
+        </button>
       )}
     </div>
   );
@@ -142,277 +156,216 @@ const PatientList: React.FC = () => {
     }
 
     return (
-      <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
-        <div className="flex flex-1 justify-between sm:hidden">
+      <div className="pagination-container">
+        <div className="pagination-info">
+          Showing <span className="pagination-highlight">{(currentPage - 1) * limit + 1}</span> to{' '}
+          <span className="pagination-highlight">
+            {Math.min(currentPage * limit, data.total)}
+          </span>{' '}
+          of <span className="pagination-highlight">{data.total}</span> results
+        </div>
+        <div className="pagination-controls">
           <button
             onClick={handlePreviousPage}
             disabled={currentPage === 1}
-            className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="pagination-btn"
+            aria-label="Previous page"
           >
-            Previous
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path
+                fillRule="evenodd"
+                d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+                clipRule="evenodd"
+              />
+            </svg>
           </button>
+          {startPage > 1 && (
+            <>
+              <button onClick={() => handlePageClick(1)} className="pagination-btn">
+                1
+              </button>
+              {startPage > 2 && <span className="pagination-ellipsis">...</span>}
+            </>
+          )}
+          {pages.map((page) => (
+            <button
+              key={page}
+              onClick={() => handlePageClick(page)}
+              className={`pagination-btn ${page === currentPage ? 'active' : ''}`}
+            >
+              {page}
+            </button>
+          ))}
+          {endPage < data.totalPages && (
+            <>
+              {endPage < data.totalPages - 1 && <span className="pagination-ellipsis">...</span>}
+              <button onClick={() => handlePageClick(data.totalPages)} className="pagination-btn">
+                {data.totalPages}
+              </button>
+            </>
+          )}
           <button
             onClick={handleNextPage}
             disabled={currentPage === data.totalPages}
-            className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="pagination-btn"
+            aria-label="Next page"
           >
-            Next
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path
+                fillRule="evenodd"
+                d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                clipRule="evenodd"
+              />
+            </svg>
           </button>
-        </div>
-        <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm text-gray-700">
-              Showing <span className="font-medium">{(currentPage - 1) * limit + 1}</span> to{' '}
-              <span className="font-medium">
-                {Math.min(currentPage * limit, data.total)}
-              </span>{' '}
-              of <span className="font-medium">{data.total}</span> results
-            </p>
-          </div>
-          <div>
-            <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-              <button
-                onClick={handlePreviousPage}
-                disabled={currentPage === 1}
-                className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span className="sr-only">Previous</span>
-                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path
-                    fillRule="evenodd"
-                    d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-              {startPage > 1 && (
-                <>
-                  <button
-                    onClick={() => handlePageClick(1)}
-                    className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                  >
-                    1
-                  </button>
-                  {startPage > 2 && (
-                    <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300">
-                      ...
-                    </span>
-                  )}
-                </>
-              )}
-              {pages.map((page) => (
-                <button
-                  key={page}
-                  onClick={() => handlePageClick(page)}
-                  className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                    page === currentPage
-                      ? 'z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                      : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-              {endPage < data.totalPages && (
-                <>
-                  {endPage < data.totalPages - 1 && (
-                    <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300">
-                      ...
-                    </span>
-                  )}
-                  <button
-                    onClick={() => handlePageClick(data.totalPages)}
-                    className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                  >
-                    {data.totalPages}
-                  </button>
-                </>
-              )}
-              <button
-                onClick={handleNextPage}
-                disabled={currentPage === data.totalPages}
-                className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span className="sr-only">Next</span>
-                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path
-                    fillRule="evenodd"
-                    d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            </nav>
-          </div>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Patients</h1>
-          <p className="mt-2 text-sm text-gray-700">
-            Manage and view all patient records
-          </p>
-        </div>
-
-        {/* Search and Add Button */}
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <PatientSearch onSearchChange={handleSearchChange} />
-          <button
-            onClick={handleAddPatient}
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <svg
-              className="-ml-1 mr-2 h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            Add New Patient
+    <div className="patient-list-layout">
+      {/* Header */}
+      <header className="patient-list-header">
+        <div className="header-title">Patient Management System</div>
+        <div className="header-right">
+          <span className="welcome-text">Welcome, Dr. {user?.name || 'John Admin'}</span>
+          <button onClick={handleLogout} className="header-logout-btn">
+            Logout
           </button>
         </div>
+      </header>
 
-        {/* Error State */}
-        {isError && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
+      <div className="patient-list-main">
+        {/* Sidebar */}
+        <aside className="patient-list-sidebar">
+          <nav className="sidebar-nav">
+            {menuItems.map((item) => (
+              <button
+                key={item.id}
+                className={`sidebar-item ${activeMenu === item.id ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveMenu(item.id);
+                  if (item.route) navigate(item.route);
+                }}
+              >
+                <svg className="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                 </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">
-                  Error loading patients
-                </h3>
-                <p className="mt-2 text-sm text-red-700">
+                <span className="sidebar-label">{item.label}</span>
+              </button>
+            ))}
+          </nav>
+        </aside>
+
+        {/* Content Area */}
+        <main className="patient-list-content">
+          {/* Page Header */}
+          <div className="page-header">
+            <h1 className="page-title">Patients</h1>
+            <p className="page-description">Manage and view all patient records</p>
+          </div>
+
+          {/* Search and Add Button */}
+          <div className="search-actions-bar">
+            <PatientSearch onSearchChange={handleSearchChange} />
+            <button onClick={handleAddPatient} className="add-patient-btn">
+              <svg
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              Add New Patient
+            </button>
+          </div>
+
+          {/* Error State */}
+          {isError && (
+            <div className="error-alert">
+              <svg
+                className="error-icon"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <div className="error-content">
+                <h3 className="error-title">Error loading patients</h3>
+                <p className="error-message">
                   {error instanceof Error ? error.message : 'An unexpected error occurred'}
                 </p>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Table */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-          {isLoading ? (
-            <div className="px-4 py-5 sm:p-6">
-              <LoadingSkeleton />
-            </div>
-          ) : data && data.data.length > 0 ? (
-            <>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Name
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Age
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Gender
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Phone
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Visits
-                      </th>
-                      <th scope="col" className="relative px-6 py-3">
-                        <span className="sr-only">Actions</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {data.data.map((patient) => (
-                      <tr
-                        key={patient.id}
-                        onClick={() => handlePatientClick(patient.id)}
-                        className="hover:bg-gray-50 cursor-pointer transition-colors"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {patient.name}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {patient.age || 'N/A'}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{patient.gender}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{patient.phone}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {patient._count?.visits || 0}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlePatientClick(patient.id);
-                            }}
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            View
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <Pagination />
-            </>
-          ) : (
-            <div className="px-4 py-5 sm:p-6">
-              <EmptyState />
-            </div>
           )}
-        </div>
+
+          {/* Table */}
+          <div className="table-card">
+            {isLoading ? (
+              <LoadingSkeleton />
+            ) : data && data.data.length > 0 ? (
+              <>
+                <div className="table-container">
+                  <table className="patients-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Phone</th>
+                        <th>Visits</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.data.map((patient) => (
+                        <tr
+                          key={patient.id}
+                          onClick={() => handlePatientClick(patient.id)}
+                        >
+                          <td className="patient-name">{patient.name}</td>
+                          <td>{patient.age || 'N/A'}</td>
+                          <td>
+                            <span className={`gender-badge ${patient.gender.toLowerCase()}`}>
+                              {patient.gender}
+                            </span>
+                          </td>
+                          <td>{patient.phone}</td>
+                          <td className="patient-visits">{patient._count?.visits || 0}</td>
+                          <td>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handlePatientClick(patient.id);
+                              }}
+                              className="view-btn"
+                            >
+                              View
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <Pagination />
+              </>
+            ) : (
+              <EmptyState />
+            )}
+          </div>
+        </main>
       </div>
     </div>
   );
