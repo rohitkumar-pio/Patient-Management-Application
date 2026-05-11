@@ -15,6 +15,12 @@
 4. **Copy-paste prompts** — Prompts are ready to use with implementation agent
 5. **Test thoroughly** — Test commands included for validation
 
+**Development Approach:**
+- All development happens in the **foundation worktree** (`c:\Work\Copilot-AI\worktrees\foundation`)
+- Create feature branches for each phase instead of separate worktrees
+- Simpler workflow with all code in one location
+- Use Git branches to organize work by feature
+
 ---
 
 ## 📋 Quick Reference Checklist
@@ -37,66 +43,62 @@
 
 **Prompt:**
 ```
-Navigate to c:\Work\Copilot-AI and set up the worktree infrastructure:
+Verify the foundation worktree is ready:
 
-1. Create a worktrees directory and add it to .gitignore
-2. Verify the repository is clean and on the main branch
+1. Navigate to the foundation worktree
+2. Verify the repository is clean and on the correct branch
 3. Ensure all documentation is committed
 
 Run these commands:
-- mkdir worktrees
-- echo worktrees/ >> .gitignore
-- git add .gitignore
-- git commit -m "chore: add worktrees directory to gitignore"
-- git push origin main
+- cd c:\Work\Copilot-AI\worktrees\foundation
+- git status  # Should show clean working tree
+- git pull origin main  # Get latest changes
 ```
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI
+cd c:\Work\Copilot-AI\worktrees\foundation
 git status  # Should show "nothing to commit, working tree clean"
-git branch  # Should show * main
-Test-Path worktrees  # Should return True
+Test-Path backend  # Should return True
+Test-Path frontend  # Should return True
 ```
 
 **Expected Output:**
-- ✅ Worktrees directory exists
-- ✅ .gitignore updated
-- ✅ Changes committed to main
+- ✅ Foundation worktree exists and is clean
+- ✅ Backend and frontend directories present
+- ✅ Ready to start development
 
 ---
 
 ## Phase 1A: Foundation Setup (Days 1-4)
 
-### Step 1A.1: Create Foundation Worktree
+### Step 1A.1: Verify Foundation Worktree
 
 **Prompt:**
 ```
-Create a new worktree for the foundation setup:
+Verify the foundation worktree is set up correctly:
 
-1. Create worktree in worktrees/foundation with branch feature/foundation-setup
-2. Navigate to the worktree
-3. Set upstream tracking
+1. Navigate to the foundation worktree
+2. Check the current branch
+3. Ensure tracking is configured
 
 Commands:
-- cd c:\Work\Copilot-AI
-- git worktree add worktrees/foundation -b feature/foundation-setup
-- cd worktrees/foundation
-- git push -u origin feature/foundation-setup
+- cd c:\Work\Copilot-AI\worktrees\foundation
+- git branch --show-current  # Should show current branch
+- git status  # Verify clean state
 ```
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI
-git worktree list  # Should show foundation worktree
-cd worktrees\foundation
-git branch --show-current  # Should show: feature/foundation-setup
+cd c:\Work\Copilot-AI\worktrees\foundation
+Test-Path .  # Should return True
+git status  # Should show clean working tree
 ```
 
 **Expected Output:**
-- ✅ Worktree created at c:\Work\Copilot-AI\worktrees\foundation
-- ✅ Branch feature/foundation-setup exists
-- ✅ Remote tracking configured
+- ✅ Foundation worktree exists at c:\Work\Copilot-AI\worktrees\foundation
+- ✅ Git repository configured
+- ✅ Ready for development
 
 ---
 
@@ -481,31 +483,21 @@ git push origin feature/foundation-setup
 
 ## Phase 1B: Patient Management (Days 5-7)
 
-### Step 1B.1: Create Patient Management Worktree
+### Step 1B.1: Create Patient Management Branch
 
 **Prompt:**
 ```
-After merging foundation to main, create patient management worktree:
-
-1. Return to main repository
-2. Pull latest main branch
-3. Create new worktree for patient management
-4. Set up tracking
+In the foundation worktree, create a new branch for patient management:
 
 Commands:
-- cd c:\Work\Copilot-AI
-- git checkout main
-- git pull origin main
-- git worktree add worktrees/patient-management -b feature/patient-management
-- cd worktrees/patient-management
+- cd c:\Work\Copilot-AI\worktrees\foundation
+- git checkout -b feature/patient-management
 - git push -u origin feature/patient-management
 ```
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI
-git worktree list  # Should show patient-management
-cd worktrees\patient-management
+cd c:\Work\Copilot-AI\worktrees\foundation
 git branch --show-current  # Should show: feature/patient-management
 ```
 
@@ -515,7 +507,7 @@ git branch --show-current  # Should show: feature/patient-management
 
 **Prompt:**
 ```
-In the patient-management worktree, implement complete Patient CRUD API:
+In the foundation worktree, implement complete Patient CRUD API:
 
 1. Create /backend/src/controllers/patientController.ts with:
    - createPatient(req, res): Create new patient with validation
@@ -547,7 +539,7 @@ Commit message: "feat(patients): implement CRUD API with search"
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\patient-management\backend
+cd c:\Work\Copilot-AI\worktrees\foundation\backend
 npx tsc --noEmit  # Should compile
 # Test with curl or Postman:
 # POST http://localhost:5000/api/patients
@@ -566,7 +558,7 @@ npx tsc --noEmit  # Should compile
 
 **Prompt:**
 ```
-In the patient-management worktree, create the patient list page:
+In the foundation worktree, create the patient list page:
 
 1. Create /frontend/src/pages/Patients/PatientList.tsx with:
    - Table showing: Name, Age, Gender, Phone, Action buttons
@@ -592,7 +584,7 @@ Commit message: "feat(patients): add patient list with search and pagination"
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\patient-management\frontend
+cd c:\Work\Copilot-AI\worktrees\foundation\frontend
 npm run dev
 # Manual testing:
 # 1. Navigate to /patients
@@ -613,7 +605,7 @@ npm run dev
 
 **Prompt:**
 ```
-In the patient-management worktree, create the patient add/edit form:
+In the foundation worktree, create the patient add/edit form:
 
 1. Create /frontend/src/components/PatientForm.tsx with:
    - Fields: Name (required), Date of Birth, Age (calculated or manual), Gender (select), Phone (required, unique), Address (textarea)
@@ -639,7 +631,7 @@ Commit message: "feat(patients): add patient form with validation"
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\patient-management\frontend
+cd c:\Work\Copilot-AI\worktrees\foundation\frontend
 npm run dev
 # Manual testing:
 # 1. Click "Add New Patient"
@@ -660,7 +652,7 @@ npm run dev
 
 **Prompt:**
 ```
-In the patient-management worktree, create the patient profile view:
+In the foundation worktree, create the patient profile view:
 
 1. Create /frontend/src/pages/Patients/PatientProfile.tsx with:
    - Patient details card (name, age, gender, phone, address)
@@ -681,7 +673,7 @@ Commit message: "feat(patients): add patient profile page with actions"
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\patient-management\frontend
+cd c:\Work\Copilot-AI\worktrees\foundation\frontend
 npm run dev
 # Manual testing:
 # 1. Click on a patient from the list
@@ -702,7 +694,7 @@ npm run dev
 
 **Prompt:**
 ```
-In the patient-management worktree, add comprehensive tests:
+In the foundation worktree, add comprehensive tests:
 
 1. Backend tests in /backend/tests/patients.test.ts:
    - Test POST /api/patients creates patient
@@ -728,7 +720,7 @@ Commit message: "test(patients): add unit and integration tests"
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\patient-management\backend
+cd c:\Work\Copilot-AI\worktrees\foundation\backend
 npm test  # Should pass all tests
 
 cd ../frontend
@@ -772,7 +764,7 @@ Finalize patient management phase:
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\patient-management
+cd c:\Work\Copilot-AI\worktrees\foundation
 
 # Backend
 cd backend
@@ -800,19 +792,22 @@ git push origin feature/patient-management
 
 ## Phase 1C: Consultation Workflow (Days 8-11)
 
-### Step 1C.1: Create Consultation Workflow Worktree
+### Step 1C.1: Create Consultation Workflow Branch
 
 **Prompt:**
 ```
-After merging patient-management to main, create consultation workflow worktree:
+In the foundation worktree, create a new branch for consultation workflow:
 
 Commands:
-- cd c:\Work\Copilot-AI
-- git checkout main
-- git pull origin main
-- git worktree add worktrees/consultation-workflow -b feature/consultation-workflow
-- cd worktrees/consultation-workflow
+- cd c:\Work\Copilot-AI\worktrees\foundation
+- git checkout -b feature/consultation-workflow
 - git push -u origin feature/consultation-workflow
+```
+
+**Verification Commands:**
+```powershell
+cd c:\Work\Copilot-AI\worktrees\foundation
+git branch --show-current  # Should show: feature/consultation-workflow
 ```
 
 ---
@@ -821,7 +816,7 @@ Commands:
 
 **Prompt:**
 ```
-In the consultation-workflow worktree, implement Visit API with medications:
+In the foundation worktree, implement Visit API with medications:
 
 1. Create /backend/src/controllers/visitController.ts with:
    - createVisit(req, res): Create visit with vitals and medications
@@ -856,7 +851,7 @@ Commit message: "feat(visits): implement visit CRUD API with vitals validation"
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\consultation-workflow\backend
+cd c:\Work\Copilot-AI\worktrees\foundation\backend
 npx tsc --noEmit
 # Test with curl:
 # POST http://localhost:5000/api/visits
@@ -874,7 +869,7 @@ npx tsc --noEmit
 
 **Prompt:**
 ```
-In the consultation-workflow worktree, implement Medication API:
+In the foundation worktree, implement Medication API:
 
 1. Create /backend/src/controllers/medicationController.ts:
    - addMedication(req, res): Add medication to existing visit
@@ -898,7 +893,7 @@ Commit message: "feat(medications): implement medication CRUD API"
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\consultation-workflow\backend
+cd c:\Work\Copilot-AI\worktrees\foundation\backend
 npx tsc --noEmit
 # Test medication endpoints
 ```
@@ -913,7 +908,7 @@ npx tsc --noEmit
 
 **Prompt:**
 ```
-In the consultation-workflow worktree, create the comprehensive consultation form:
+In the foundation worktree, create the comprehensive consultation form:
 
 1. Create /frontend/src/pages/NewVisit/NewVisitForm.tsx with single-page layout:
    
@@ -962,7 +957,7 @@ Commit message: "feat(visits): add comprehensive new visit form"
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\consultation-workflow\frontend
+cd c:\Work\Copilot-AI\worktrees\foundation\frontend
 npm run dev
 # Manual testing:
 # 1. Navigate to /visits/new
@@ -987,7 +982,7 @@ npm run dev
 
 **Prompt:**
 ```
-In the consultation-workflow worktree, create specialized vitals input:
+In the foundation worktree, create specialized vitals input:
 
 1. Create /frontend/src/components/VitalsInput.tsx with:
    - Temperature input:
@@ -1037,7 +1032,7 @@ Commit message: "feat(visits): add vitals input component with validation"
 
 **Prompt:**
 ```
-In the consultation-workflow worktree, create dynamic medication list:
+In the foundation worktree, create dynamic medication list:
 
 1. Create /frontend/src/components/MedicationList.tsx:
    - Table layout with headers
@@ -1081,7 +1076,7 @@ Commit message: "feat(visits): add dynamic medication list component"
 
 **Prompt:**
 ```
-In the consultation-workflow worktree, implement auto-save for visit drafts:
+In the foundation worktree, implement auto-save for visit drafts:
 
 1. Create /frontend/src/hooks/useAutoSave.ts:
    - Automatically save form data to localStorage every 30 seconds
@@ -1120,7 +1115,7 @@ Commit message: "feat(visits): add auto-save for visit drafts"
 
 **Prompt:**
 ```
-In the consultation-workflow worktree, add comprehensive tests:
+In the foundation worktree, add comprehensive tests:
 
 1. Backend tests in /backend/tests/visits.test.ts:
    - Test POST /api/visits creates visit with medications
@@ -1145,7 +1140,7 @@ Commit message: "test(visits): add comprehensive visit workflow tests"
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\consultation-workflow
+cd c:\Work\Copilot-AI\worktrees\foundation
 npm test  # Backend and frontend
 ```
 
@@ -1184,7 +1179,7 @@ Finalize consultation workflow phase:
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\consultation-workflow
+cd c:\Work\Copilot-AI\worktrees\foundation
 # Run builds and tests
 # Push changes
 git push origin feature/consultation-workflow
@@ -1199,21 +1194,24 @@ git push origin feature/consultation-workflow
 
 ## Phase 1D: Prescription Printing (Days 12-14)
 
-### Step 1D.1: Create Prescription Printing Worktree
+### Step 1D.1: Create Prescription Printing Branch
 
 **Prompt:**
 ```
-After merging consultation-workflow to main, create prescription printing worktree:
+In the foundation worktree, create a new branch for prescription printing:
 
 Commands:
-- cd c:\Work\Copilot-AI
-- git checkout main
-- git pull origin main
-- git worktree add worktrees/prescription-printing -b feature/prescription-printing
-- cd worktrees/prescription-printing
+- cd c:\Work\Copilot-AI\worktrees\foundation
+- git checkout -b feature/prescription-printing
 - git push -u origin feature/prescription-printing
 - cd backend && npm install pdfkit
 - cd ../frontend && npm install jspdf jspdf-autotable
+```
+
+**Verification Commands:**
+```powershell
+cd c:\Work\Copilot-AI\worktrees\foundation
+git branch --show-current  # Should show: feature/prescription-printing
 ```
 
 ---
@@ -1222,7 +1220,7 @@ Commands:
 
 **Prompt:**
 ```
-In the prescription-printing worktree, create PDF generation service:
+In the foundation worktree, create PDF generation service:
 
 1. Create /backend/src/services/prescriptionGenerator.ts using PDFKit:
    - generatePrescriptionPDF(visitId): Promise<Buffer>
@@ -1252,7 +1250,7 @@ Commit message: "feat(prescription): implement PDF generation service"
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\prescription-printing\backend
+cd c:\Work\Copilot-AI\worktrees\foundation\backend
 npx tsc --noEmit
 # Test endpoint:
 # GET http://localhost:5000/api/visits/1/prescription
@@ -1271,7 +1269,7 @@ npx tsc --noEmit
 
 **Prompt:**
 ```
-In the prescription-printing worktree, create prescription preview modal:
+In the foundation worktree, create prescription preview modal:
 
 1. Create /frontend/src/components/PrescriptionPreview.tsx:
    - Modal dialog with full prescription preview
@@ -1294,7 +1292,7 @@ Commit message: "feat(prescription): add prescription preview modal"
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\prescription-printing\frontend
+cd c:\Work\Copilot-AI\worktrees\foundation\frontend
 npm run dev
 # Manual testing:
 # 1. Complete a visit
@@ -1314,7 +1312,7 @@ npm run dev
 
 **Prompt:**
 ```
-In the prescription-printing worktree, integrate prescription printing:
+In the foundation worktree, integrate prescription printing:
 
 1. Update /frontend/src/pages/NewVisit/NewVisitForm.tsx:
    - After successful visit submission, show options:
@@ -1353,7 +1351,7 @@ Commit message: "feat(prescription): integrate printing in visit workflow"
 
 **Prompt:**
 ```
-In the prescription-printing worktree, create clinic settings for prescription customization:
+In the foundation worktree, create clinic settings for prescription customization:
 
 1. Create /backend/src/models/settings.ts:
    - Clinic name
@@ -1398,7 +1396,7 @@ Commit message: "feat(prescription): add clinic settings for customization"
 
 **Prompt:**
 ```
-In the prescription-printing worktree, add tests:
+In the foundation worktree, add tests:
 
 1. Backend tests in /backend/tests/prescription.test.ts:
    - Test PDF generation completes < 10 seconds
@@ -1453,7 +1451,7 @@ Finalize prescription printing phase:
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\prescription-printing
+cd c:\Work\Copilot-AI\worktrees\foundation
 # Build and test
 git push origin feature/prescription-printing
 ```
@@ -1467,19 +1465,22 @@ git push origin feature/prescription-printing
 
 ## Phase 1E: Appointment Scheduling (Days 15-17)
 
-### Step 1E.1: Create Appointment Scheduling Worktree
+### Step 1E.1: Create Appointment Scheduling Branch
 
 **Prompt:**
 ```
-Create appointment scheduling worktree:
+In the foundation worktree, create a new branch for appointment scheduling:
 
 Commands:
-- cd c:\Work\Copilot-AI
-- git checkout main
-- git pull origin main
-- git worktree add worktrees/appointment-scheduling -b feature/appointment-scheduling
-- cd worktrees/appointment-scheduling
+- cd c:\Work\Copilot-AI\worktrees\foundation
+- git checkout -b feature/appointment-scheduling
 - git push -u origin feature/appointment-scheduling
+```
+
+**Verification Commands:**
+```powershell
+cd c:\Work\Copilot-AI\worktrees\foundation
+git branch --show-current  # Should show: feature/appointment-scheduling
 ```
 
 ---
@@ -1488,7 +1489,7 @@ Commands:
 
 **Prompt:**
 ```
-In the appointment-scheduling worktree, implement appointment API:
+In the foundation worktree, implement appointment API:
 
 1. Create /backend/src/controllers/appointmentController.ts:
    - createAppointment(req, res): Schedule appointment
@@ -1513,7 +1514,7 @@ Commit message: "feat(appointments): implement appointment API with status"
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\appointment-scheduling\backend
+cd c:\Work\Copilot-AI\worktrees\foundation\backend
 npx tsc --noEmit
 # Test endpoints
 ```
@@ -1529,7 +1530,7 @@ npx tsc --noEmit
 
 **Prompt:**
 ```
-In the appointment-scheduling worktree, create appointments page:
+In the foundation worktree, create appointments page:
 
 1. Create /frontend/src/pages/Appointments/AppointmentsPage.tsx:
    - Date selector (defaults to today)
@@ -1556,7 +1557,7 @@ Commit message: "feat(appointments): add appointments page with daily view"
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\appointment-scheduling\frontend
+cd c:\Work\Copilot-AI\worktrees\foundation\frontend
 npm run dev
 # Navigate to /appointments
 # Test date navigation
@@ -1574,7 +1575,7 @@ npm run dev
 
 **Prompt:**
 ```
-In the appointment-scheduling worktree, create appointment scheduling modal:
+In the foundation worktree, create appointment scheduling modal:
 
 1. Create /frontend/src/components/AddAppointmentModal.tsx:
    - Patient selection (searchable dropdown)
@@ -1617,7 +1618,7 @@ Commit message: "feat(appointments): add appointment scheduling modal"
 
 **Prompt:**
 ```
-In the appointment-scheduling worktree, add today's appointments to dashboard:
+In the foundation worktree, add today's appointments to dashboard:
 
 1. Create /frontend/src/pages/Dashboard.tsx:
    - Welcome message
@@ -1656,7 +1657,7 @@ Commit message: "feat(appointments): add today's queue to dashboard"
 
 **Prompt:**
 ```
-In the appointment-scheduling worktree, add tests:
+In the foundation worktree, add tests:
 
 1. Backend tests in /backend/tests/appointments.test.ts:
    - Test create appointment
@@ -1702,19 +1703,22 @@ Finalize appointments phase:
 
 ## Phase 1F: Patient History (Days 18-19)
 
-### Step 1F.1: Create Patient History Worktree
+### Step 1F.1: Create Patient History Branch
 
 **Prompt:**
 ```
-Create patient history worktree:
+In the foundation worktree, create a new branch for patient history:
 
 Commands:
-- cd c:\Work\Copilot-AI
-- git checkout main
-- git pull origin main
-- git worktree add worktrees/patient-history -b feature/patient-history
-- cd worktrees/patient-history
+- cd c:\Work\Copilot-AI\worktrees\foundation
+- git checkout -b feature/patient-history
 - git push -u origin feature/patient-history
+```
+
+**Verification Commands:**
+```powershell
+cd c:\Work\Copilot-AI\worktrees\foundation
+git branch --show-current  # Should show: feature/patient-history
 ```
 
 ---
@@ -1723,7 +1727,7 @@ Commands:
 
 **Prompt:**
 ```
-In the patient-history worktree, implement history API:
+In the foundation worktree, implement history API:
 
 1. Update /backend/src/controllers/visitController.ts:
    - getPatientHistory(req, res): Get all visits with filters
@@ -1757,7 +1761,7 @@ Commit message: "feat(history): add optimized patient history API"
 
 **Prompt:**
 ```
-In the patient-history worktree, create patient history page:
+In the foundation worktree, create patient history page:
 
 1. Create /frontend/src/pages/Patients/PatientHistory.tsx:
    - Patient header (name, age, contact)
@@ -1796,7 +1800,7 @@ Commit message: "feat(history): add patient history timeline with filtering"
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\patient-history\frontend
+cd c:\Work\Copilot-AI\worktrees\foundation\frontend
 npm run dev
 # Navigate to /patients/:id/history
 # Test date filtering
@@ -1816,7 +1820,7 @@ npm run dev
 
 **Prompt:**
 ```
-In the patient-history worktree, add vitals comparison chart:
+In the foundation worktree, add vitals comparison chart:
 
 1. Install chart library: npm install recharts
 
@@ -1850,7 +1854,7 @@ Commit message: "feat(history): add vitals trend chart (optional)"
 
 **Prompt:**
 ```
-In the patient-history worktree, add tests:
+In the foundation worktree, add tests:
 
 1. Backend tests:
    - Test history API with 50+ visits returns < 2 seconds
@@ -1895,20 +1899,23 @@ Finalize patient history phase:
 
 ## Phase 1G: Data Export (Days 20-21)
 
-### Step 1G.1: Create Data Export Worktree
+### Step 1G.1: Create Data Export Branch
 
 **Prompt:**
 ```
-Create data export worktree:
+In the foundation worktree, create a new branch for data export:
 
 Commands:
-- cd c:\Work\Copilot-AI
-- git checkout main
-- git pull origin main
-- git worktree add worktrees/data-export -b feature/data-export
-- cd worktrees/data-export
+- cd c:\Work\Copilot-AI\worktrees\foundation
+- git checkout -b feature/data-export
 - git push -u origin feature/data-export
 - cd backend && npm install csv-writer papaparse
+```
+
+**Verification Commands:**
+```powershell
+cd c:\Work\Copilot-AI\worktrees\foundation
+git branch --show-current  # Should show: feature/data-export
 ```
 
 ---
@@ -1917,7 +1924,7 @@ Commands:
 
 **Prompt:**
 ```
-In the data-export worktree, implement export service:
+In the foundation worktree, implement export service:
 
 1. Create /backend/src/services/exportService.ts:
    - exportPatientsCSV(): Export all patients to CSV
@@ -1949,7 +1956,7 @@ Commit message: "feat(export): implement CSV and PDF export service"
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\data-export\backend
+cd c:\Work\Copilot-AI\worktrees\foundation\backend
 npx tsc --noEmit
 # Test endpoints:
 # GET http://localhost:5000/api/export/patients/csv
@@ -1967,7 +1974,7 @@ npx tsc --noEmit
 
 **Prompt:**
 ```
-In the data-export worktree, create export dialog:
+In the foundation worktree, create export dialog:
 
 1. Create /frontend/src/components/ExportDialog.tsx:
    - Modal dialog with export options
@@ -1994,7 +2001,7 @@ Commit message: "feat(export): add export dialog with CSV/PDF options"
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\data-export\frontend
+cd c:\Work\Copilot-AI\worktrees\foundation\frontend
 npm run dev
 # Manual testing:
 # 1. Click "Export" button
@@ -2017,7 +2024,7 @@ npm run dev
 
 **Prompt:**
 ```
-In the data-export worktree, add tests:
+In the foundation worktree, add tests:
 
 1. Backend tests in /backend/tests/export.test.ts:
    - Test CSV export contains all patient fields
@@ -2060,19 +2067,22 @@ Finalize data export phase:
 
 ## Phase 1H: Testing & Deployment (Days 22-28)
 
-### Step 1H.1: Create Testing & Deployment Worktree
+### Step 1H.1: Create Testing & Deployment Branch
 
 **Prompt:**
 ```
-Create testing and deployment worktree:
+In the foundation worktree, create a new branch for testing and deployment:
 
 Commands:
-- cd c:\Work\Copilot-AI
-- git checkout main
-- git pull origin main
-- git worktree add worktrees/testing-deployment -b feature/testing-deployment
-- cd worktrees/testing-deployment
+- cd c:\Work\Copilot-AI\worktrees\foundation
+- git checkout -b feature/testing-deployment
 - git push -u origin feature/testing-deployment
+```
+
+**Verification Commands:**
+```powershell
+cd c:\Work\Copilot-AI\worktrees\foundation
+git branch --show-current  # Should show: feature/testing-deployment
 ```
 
 ---
@@ -2081,7 +2091,7 @@ Commands:
 
 **Prompt:**
 ```
-In the testing-deployment worktree, set up E2E testing:
+In the foundation worktree, set up E2E testing:
 
 1. Install Playwright:
    - cd frontend
@@ -2106,7 +2116,7 @@ Commit message: "test(e2e): setup Playwright for end-to-end testing"
 
 **Prompt:**
 ```
-In the testing-deployment worktree, create comprehensive E2E tests:
+In the foundation worktree, create comprehensive E2E tests:
 
 1. Create /tests/e2e/auth.spec.ts:
    - Test login with valid credentials
@@ -2151,7 +2161,7 @@ Commit message: "test(e2e): add comprehensive workflow tests"
 
 **Verification Commands:**
 ```powershell
-cd c:\Work\Copilot-AI\worktrees\testing-deployment\frontend
+cd c:\Work\Copilot-AI\worktrees\foundation\frontend
 npx playwright test
 npx playwright test --ui  # Open UI mode
 ```
@@ -2166,7 +2176,7 @@ npx playwright test --ui  # Open UI mode
 
 **Prompt:**
 ```
-In the testing-deployment worktree, create GitHub Actions CI/CD pipeline:
+In the foundation worktree, create GitHub Actions CI/CD pipeline:
 
 1. Create /.github/workflows/ci.yml:
    - Trigger: on push to main and pull requests
@@ -2212,7 +2222,7 @@ git push origin feature/testing-deployment
 
 **Prompt:**
 ```
-In the testing-deployment worktree, create comprehensive documentation:
+In the foundation worktree, create comprehensive documentation:
 
 1. Create /docs/USER_GUIDE.md:
    - Getting started
@@ -2260,7 +2270,7 @@ Commit message: "docs: add comprehensive user and deployment guides"
 
 **Prompt:**
 ```
-In the testing-deployment worktree, run performance audit:
+In the foundation worktree, run performance audit:
 
 1. Frontend performance:
    - Run Lighthouse audit
@@ -2305,7 +2315,7 @@ npx lighthouse http://localhost:5173 --view
 
 **Prompt:**
 ```
-In the testing-deployment worktree, conduct security audit:
+In the foundation worktree, conduct security audit:
 
 1. Backend security:
    - npm audit (fix vulnerabilities)
@@ -2346,7 +2356,7 @@ npm audit
 
 **Prompt:**
 ```
-In the testing-deployment worktree, create deployment configuration:
+In the foundation worktree, create deployment configuration:
 
 1. Backend deployment (Railway):
    - Create railway.json
@@ -2375,7 +2385,7 @@ Commit message: "deploy: add Vercel and Railway configuration"
 
 **Prompt:**
 ```
-In the testing-deployment worktree, execute final pre-launch checklist:
+In the foundation worktree, execute final pre-launch checklist:
 
 1. All BRD Requirements Verification:
    - [ ] Web-based access ✓
@@ -2528,19 +2538,22 @@ Commit message: "deploy: launch v1.0.0 to production"
 
 ## Quick Command Reference
 
-### Worktree Management
+### Branch Management
 ```powershell
-# List all worktrees
-git worktree list
+# List all branches
+git branch -a
 
-# Create new worktree
-git worktree add worktrees/[name] -b feature/[name]
+# Create new branch
+git checkout -b feature/[name]
 
-# Remove worktree
-git worktree remove worktrees/[name]
+# Switch to branch
+git checkout [branch-name]
 
-# Switch to worktree
-cd worktrees/[name]
+# Delete branch (local)
+git branch -d feature/[name]
+
+# Delete branch (remote)
+git push origin --delete feature/[name]
 ```
 
 ### Development Commands
@@ -2587,9 +2600,12 @@ git rebase origin/main
 - **Execute prompts in order** - Dependencies exist between phases
 - **Verify after each step** - Use verification commands
 - **Don't skip testing** - Tests ensure quality
+- **All development in foundation worktree** - No separate worktrees needed
+- **Create feature branches** - One branch per feature phase
 - **Follow Doc_Finishing_Guide.md** - For merge/PR procedures
 - **Refer to Doc_Implementation.md** - For detailed code examples
 - **Check Doc_Verification_Strategy.md** - For quality gates
+- **Working directory**: `c:\Work\Copilot-AI\worktrees\foundation`
 
 ---
 
