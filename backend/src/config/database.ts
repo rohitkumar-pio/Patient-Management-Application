@@ -16,11 +16,11 @@ if (!databaseUrl) {
 // Parse DATABASE_URL
 const url = new URL(databaseUrl);
 
-// Create PostgreSQL connection pool with explicit configuration to ensure types are correct
+// Create PostgreSQL connection pool
 const pool = new Pool({
   host: url.hostname,
   port: parseInt(url.port || '5432'),
-  database: url.pathname.slice(1), // Remove leading slash  
+  database: url.pathname.slice(1),
   user: url.username,
   password: url.password,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
@@ -34,7 +34,10 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 export const prisma =
   globalForPrisma.prisma ||
-  new PrismaClient({ adapter });
+  new PrismaClient({
+    adapter,
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  });
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 

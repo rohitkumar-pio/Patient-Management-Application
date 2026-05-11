@@ -1,0 +1,251 @@
+// PatientSearch Component Styling
+
+// ========================================
+// Variables
+// ========================================
+
+$color-primary: #1e40af;
+$color-primary-light: #3b82f6;
+$color-primary-lighter: #60a5fa;
+
+$color-gray-100: #f3f4f6;
+$color-gray-200: #e5e7eb;
+$color-gray-300: #d1d5db;
+$color-gray-400: #9ca3af;
+$color-gray-500: #6b7280;
+$color-gray-600: #4b5563;
+
+$color-white: #ffffff;
+$color-danger: #ef4444;
+
+$radius-lg: 0.75rem;
+$transition-normal: 0.2s ease;
+$transition-fast: 0.15s ease;
+
+// ========================================
+// Search Container
+// ========================================
+
+.patient-search-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  
+  // Subtle animation on mount
+  animation: slideIn 0.3s ease-out;
+}
+
+// ========================================
+// Search Input
+// ========================================
+
+.patient-search-input {
+  width: 100%;
+  padding: 0.75rem 2.75rem 0.75rem 2.75rem;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: $color-gray-600;
+  background-color: $color-white;
+  border: 2px solid $color-gray-200;
+  border-radius: $radius-lg;
+  transition: all $transition-normal;
+  outline: none;
+  
+  // Add subtle shadow
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  
+  // Placeholder styling
+  &::placeholder {
+    color: $color-gray-400;
+    font-style: italic;
+  }
+  
+  // Focus state with enhanced visual feedback
+  &:focus {
+    border-color: $color-primary;
+    background-color: $color-white;
+    box-shadow: 
+      0 0 0 3px rgba(30, 64, 175, 0.1),
+      0 2px 8px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+  }
+  
+  // Hover state
+  &:hover:not(:focus) {
+    border-color: $color-gray-300;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+}
+
+// ========================================
+// Search Icon
+// ========================================
+
+.search-icon {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: $color-gray-400;
+  transition: color $transition-normal;
+  
+  svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2;
+  }
+}
+
+// Change icon color when input is focused
+.patient-search-container:focus-within .search-icon {
+  color: $color-primary;
+}
+
+// ========================================
+// Clear Button
+// ========================================
+
+.search-clear-btn {
+  position: absolute;
+  right: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  background: none;
+  border: none;
+  color: $color-gray-400;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all $transition-fast;
+  
+  // Smooth entrance animation
+  animation: fadeIn 0.2s ease;
+  
+  svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.5;
+  }
+  
+  &:hover {
+    color: $color-danger;
+    background-color: rgba(239, 68, 68, 0.1);
+    transform: translateY(-50%) scale(1.1);
+  }
+  
+  &:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+  
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+// ========================================
+// Animations
+// ========================================
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+// ========================================
+// Responsive Design
+// ========================================
+
+@media (max-width: 768px) {
+  .patient-search-container {
+    max-width: 100%;
+  }
+  
+  .patient-search-input {
+    font-size: 0.875rem;
+    padding: 0.625rem 2.5rem 0.625rem 2.5rem;
+  }
+  
+  .search-icon {
+    left: 0.75rem;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+  
+  .search-clear-btn {
+    right: 0.75rem;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
+// ========================================
+// Dark Mode Support (Future Enhancement)
+// ========================================
+
+@media (prefers-color-scheme: dark) {
+  .patient-search-input {
+    background-color: $color-gray-600;
+    border-color: $color-gray-500;
+    color: $color-white;
+    
+    &::placeholder {
+      color: $color-gray-400;
+    }
+    
+    &:focus {
+      border-color: $color-primary-lighter;
+      box-shadow: 
+        0 0 0 3px rgba(96, 165, 250, 0.2),
+        0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+  }
+  
+  .search-icon {
+    color: $color-gray-400;
+  }
+  
+  .patient-search-container:focus-within .search-icon {
+    color: $color-primary-lighter;
+  }
+  
+  .search-clear-btn {
+    color: $color-gray-400;
+    
+    &:hover {
+      color: $color-danger;
+      background-color: rgba(239, 68, 68, 0.2);
+    }
+  }
+}

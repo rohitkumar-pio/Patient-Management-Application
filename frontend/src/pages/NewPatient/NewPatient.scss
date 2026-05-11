@@ -1,12 +1,15 @@
 .new-patient-content {
-  padding: 2rem;
-  min-height: calc(100vh - 80px);
+  padding: 1.25rem;
+  height: calc(100vh - 80px);
   background-color: #f9fafb;
   overflow-y: auto;
-  max-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   @media (max-width: 768px) {
-    padding: 1rem;
+    padding: 0.75rem;
+    align-items: flex-start;
   }
 
   .loading-container,

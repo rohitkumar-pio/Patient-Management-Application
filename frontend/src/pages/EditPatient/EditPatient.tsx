@@ -15,7 +15,7 @@ export const EditPatient: React.FC = () => {
     queryKey: ['patient', id],
     queryFn: async () => {
       const response = await apiClient.get(`/patients/${id}`);
-      return response.data;
+      return response.data.data; // Extract patient from nested response
     },
     enabled: !!id,
   });

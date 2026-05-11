@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/database';
 import { CreateVisitInput, UpdateVisitInput } from '../validators/visitValidator';
-
-const prisma = new PrismaClient();
 
 /**
  * Create a new visit with medications in a transaction

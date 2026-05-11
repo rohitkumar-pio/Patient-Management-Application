@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDebounce } from '../hooks/useDebounce';
+import './PatientSearch.scss';
 
 interface PatientSearchProps {
   onSearchChange: (searchTerm: string) => void;
@@ -23,11 +24,12 @@ const PatientSearch: React.FC<PatientSearchProps> = ({
   };
 
   return (
-    <div className="relative w-full max-w-md">
+    <div className="patient-search-container">
       {/* Search Icon */}
-      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+      <div className="search-icon">
         <svg
-          className="w-5 h-5 text-gray-400"
+          width="20"
+          height="20"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -48,18 +50,19 @@ const PatientSearch: React.FC<PatientSearchProps> = ({
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         placeholder={placeholder}
-        className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="patient-search-input"
       />
 
       {/* Clear Button */}
       {searchTerm && (
         <button
           onClick={handleClear}
-          className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+          className="search-clear-btn"
           aria-label="Clear search"
         >
           <svg
-            className="w-5 h-5"
+            width="18"
+            height="18"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
