@@ -1,3 +1,4 @@
 // Page components
 export { default as Login } from './Login';
 export { Dashboard } from './Dashboard';
+export { default as PatientList } from './PatientList';

@@ -1,2 +1,2 @@
-// Custom hooks will be added here
-export {};
+// Custom hooks
+export { useDebounce } from './useDebounce';
