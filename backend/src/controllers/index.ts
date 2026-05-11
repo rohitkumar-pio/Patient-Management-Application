@@ -3,4 +3,5 @@
 
 export * from './authController';
 export * from './patientController';
+export * from './visitController';
 

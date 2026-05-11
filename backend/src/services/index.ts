@@ -2,4 +2,5 @@
 // Services contain the core application logic
 
 export * as patientService from './patientService';
+export * as visitService from './visitService';
 

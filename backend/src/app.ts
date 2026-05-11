@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 import patientRoutes from './routes/patients';
+import visitRoutes from './routes/visits';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 
@@ -49,7 +50,8 @@ app.get('/', (_req: Request, res: Response) => {
     endpoints: {
       health: '/api/health',
       auth: '/api/auth',
-      patients: '/api/patients'
+      patients: '/api/patients',
+      visits: '/api/visits'
     }
   });
 });
@@ -57,6 +59,7 @@ app.get('/', (_req: Request, res: Response) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
+app.use('/api/visits', visitRoutes);
 
 // 404 handler - must be after all routes
 app.use(notFoundHandler);
