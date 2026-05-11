@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
+import patientRoutes from './routes/patients';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 
@@ -47,13 +48,15 @@ app.get('/', (_req: Request, res: Response) => {
     version: '1.0.0',
     endpoints: {
       health: '/api/health',
-      auth: '/api/auth'
+      auth: '/api/auth',
+      patients: '/api/patients'
     }
   });
 });
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/patients', patientRoutes);
 
 // 404 handler - must be after all routes
 app.use(notFoundHandler);
