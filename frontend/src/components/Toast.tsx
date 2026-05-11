@@ -63,3 +63,8 @@ export const ToastContainer: React.FC = () => {
     </div>
   );
 };
+
+// Helper function to trigger toast from anywhere in the app
+export const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+  window.dispatchEvent(new CustomEvent('toast', { detail: { message, type } }));
+};

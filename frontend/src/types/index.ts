@@ -9,6 +9,8 @@ export interface Patient {
   address?: string;
   createdAt: string;
   updatedAt: string;
+  visitCount?: number;
+  lastVisitDate?: string;
   _count?: {
     visits: number;
   };
@@ -20,6 +22,23 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+// API Response wrappers
+export interface ApiSuccessResponse<T> {
+  success: true;
+  data: T;
+}
+
+export interface ApiPaginatedResponse<T> {
+  success: true;
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 // User types

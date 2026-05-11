@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../lib/api';
 import PatientSearch from '../components/PatientSearch';
-import { Patient, PaginatedResponse } from '../types';
+import { Patient, PaginatedResponse, ApiPaginatedResponse } from '../types';
 import { useAuthStore } from '../stores/authStore';
 import './PatientList.scss';
 
@@ -43,10 +43,18 @@ const PatientList: React.FC = () => {
         params.append('search', searchTerm);
       }
 
-      const response = await apiClient.get<PaginatedResponse<Patient>>(
+      const response = await apiClient.get<ApiPaginatedResponse<Patient>>(
         `/patients?${params.toString()}`
       );
-      return response.data;
+      
+      // Transform API response to match PaginatedResponse interface
+      return {
+        data: response.data.data,
+        page: response.data.pagination.page,
+        limit: response.data.pagination.limit,
+        total: response.data.pagination.total,
+        totalPages: response.data.pagination.totalPages,
+      } as PaginatedResponse<Patient>;
     },
   });
 
