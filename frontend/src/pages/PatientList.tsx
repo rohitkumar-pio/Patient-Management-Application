@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import apiClient from '../../lib/api';
-import PatientSearch from '../../components/PatientSearch';
-import { Patient, PaginatedResponse } from '../../types';
+import apiClient from '../lib/api';
+import PatientSearch from '../components/PatientSearch';
+import { Patient, PaginatedResponse } from '../types';
 
 const PatientList: React.FC = () => {
   const navigate = useNavigate();
