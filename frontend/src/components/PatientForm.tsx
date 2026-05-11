@@ -104,7 +104,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({
     try {
       const payload = {
         ...data,
-        dateOfBirth: data.dateOfBirth || undefined,
+        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth).toISOString() : undefined,
         age: data.age ? parseInt(data.age, 10) : undefined,
       };
 
