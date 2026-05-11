@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { PatientForm } from '../components/PatientForm';
 import * as apiClient from '../lib/api';
+import { Patient } from '../types';
 
 // Mock the API client
 vi.mock('../lib/api', () => ({
@@ -82,11 +83,11 @@ describe('PatientForm Component', () => {
     });
 
     it('should populate form fields in edit mode', () => {
-      const existingPatient = {
+      const existingPatient: Patient = {
         id: 'patient-1',
         name: 'John Doe',
         age: 35,
-        gender: 'Male',
+        gender: 'Male' as const,
         phone: '1234567890',
         address: '123 Main St',
         dateOfBirth: '1989-01-01',
@@ -306,11 +307,11 @@ describe('PatientForm Component', () => {
 
     it('should update patient in edit mode', async () => {
       const user = userEvent.setup();
-      const existingPatient = {
+      const existingPatient: Patient = {
         id: 'patient-1',
         name: 'John Doe',
         age: 35,
-        gender: 'Male',
+        gender: 'Male' as const,
         phone: '1234567890',
         address: '123 Main St',
         dateOfBirth: '1989-01-01',

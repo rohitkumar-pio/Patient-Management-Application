@@ -1,6 +1,6 @@
 // Patient types
 export interface Patient {
-  id: number;
+  id: string;
   name: string;
   age?: number;
   dateOfBirth?: string;
@@ -43,7 +43,7 @@ export interface ApiPaginatedResponse<T> {
 
 // User types
 export interface User {
-  id: number;
+  id: string;
   email: string;
   name: string;
   role: string;

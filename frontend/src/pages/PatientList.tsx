@@ -80,7 +80,7 @@ const PatientList: React.FC = () => {
   };
 
   // Handle patient row click
-  const handlePatientClick = (patientId: number) => {
+  const handlePatientClick = (patientId: string) => {
     navigate(`/patients/${patientId}`);
   };
 
@@ -90,12 +90,12 @@ const PatientList: React.FC = () => {
   };
 
   // Handle edit patient
-  const handleEditPatient = (patientId: number) => {
+  const handleEditPatient = (patientId: string) => {
     navigate(`/patients/${patientId}/edit`);
   };
 
   // Handle delete patient
-  const handleDeletePatient = async (patientId: number, patientName: string) => {
+  const handleDeletePatient = async (patientId: string, patientName: string) => {
     if (!window.confirm(`Are you sure you want to delete patient "${patientName}"? This action cannot be undone.`)) {
       return;
     }
