@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../lib/api';
 import PatientSearch from '../components/PatientSearch';
@@ -9,6 +9,7 @@ import './PatientList.scss';
 
 const PatientList: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, logout } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -78,6 +79,39 @@ const PatientList: React.FC = () => {
   // Handle add new patient
   const handleAddPatient = () => {
     navigate('/patients/new');
+  };
+
+  // Handle edit patient
+  const handleEditPatient = (patientId: number) => {
+    navigate(`/patients/${patientId}/edit`);
+  };
+
+  // Handle delete patient
+  const handleDeletePatient = async (patientId: number, patientName: string) => {
+    if (!window.confirm(`Are you sure you want to delete patient "${patientName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await apiClient.delete(`/patients/${patientId}`);
+      
+      // Show success toast
+      const event = new CustomEvent('toast', { 
+        detail: { message: 'Patient deleted successfully', type: 'success' } 
+      });
+      window.dispatchEvent(event);
+
+      // Refetch the patient list
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+    } catch (error: any) {
+      console.error('Error deleting patient:', error);
+      
+      const errorMessage = error.response?.data?.message || 'Failed to delete patient. Please try again.';
+      const event = new CustomEvent('toast', { 
+        detail: { message: errorMessage, type: 'error' } 
+      });
+      window.dispatchEvent(event);
+    }
   };
 
   // Loading skeleton
@@ -332,9 +366,10 @@ const PatientList: React.FC = () => {
                       {data.data.map((patient) => (
                         <tr
                           key={patient.id}
-                          onClick={() => handlePatientClick(patient.id)}
                         >
-                          <td className="patient-name">{patient.name}</td>
+                          <td className="patient-name" onClick={() => handlePatientClick(patient.id)} style={{ cursor: 'pointer' }}>
+                            {patient.name}
+                          </td>
                           <td>{patient.age || 'N/A'}</td>
                           <td>
                             <span className={`gender-badge ${patient.gender.toLowerCase()}`}>
@@ -343,15 +378,46 @@ const PatientList: React.FC = () => {
                           </td>
                           <td>{patient.phone}</td>
                           <td className="patient-visits">{patient._count?.visits || 0}</td>
-                          <td>
+                          <td className="table-actions">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handlePatientClick(patient.id);
                               }}
-                              className="view-btn"
+                              className="action-btn view-btn"
+                              title="View patient details"
                             >
+                              <svg fill="currentColor" viewBox="0 0 20 20" width="16" height="16">
+                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                              </svg>
                               View
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditPatient(patient.id);
+                              }}
+                              className="action-btn edit-btn"
+                              title="Edit patient"
+                            >
+                              <svg fill="currentColor" viewBox="0 0 20 20" width="16" height="16">
+                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                              </svg>
+                              Edit
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeletePatient(patient.id, patient.name);
+                              }}
+                              className="action-btn delete-btn"
+                              title="Delete patient"
+                            >
+                              <svg fill="currentColor" viewBox="0 0 20 20" width="16" height="16">
+                                <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                              </svg>
+                              Delete
                             </button>
                           </td>
                         </tr>

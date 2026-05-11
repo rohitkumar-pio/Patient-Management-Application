@@ -4,7 +4,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Login from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import PatientList from './pages/PatientList';
+import { NewPatient, EditPatient } from './pages';
 import ProtectedRoute from './components/ProtectedRoute';
+import { ToastContainer } from './components';
 import { useAuthStore } from './stores/authStore';
 
 // Create a client for React Query
@@ -22,6 +24,7 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
+        <ToastContainer />
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LoginWrapper />} />
@@ -40,6 +43,22 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <PatientList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/patients/new"
+            element={
+              <ProtectedRoute>
+                <NewPatient />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/patients/:id/edit"
+            element={
+              <ProtectedRoute>
+                <EditPatient />
               </ProtectedRoute>
             }
           />
