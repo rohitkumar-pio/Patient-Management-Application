@@ -71,15 +71,17 @@ export const NewVisitForm: React.FC = () => {
   const selectedPatientId = watch('patientId');
 
   // Fetch patients for dropdown
-  const { data: patientsResponse } = useQuery({
+  const { data: patientsResponse, isLoading: patientsLoading } = useQuery({
     queryKey: ['patients'],
     queryFn: async () => {
-      const response = await apiClient.get('/patients?limit=1000');
+      const response = await apiClient.get('/patients?limit=100');
+      console.log('Patients API Response:', response.data);
       return response.data;
     },
   });
 
   const patients = patientsResponse?.data || [];
+  console.log('Patients array:', patients);
 
   // Fetch selected patient details
   const { data: selectedPatientResponse } = useQuery({
@@ -257,13 +259,18 @@ export const NewVisitForm: React.FC = () => {
               id="patientId"
               {...register('patientId')}
               className={errors.patientId ? 'error' : ''}
+              disabled={patientsLoading}
             >
-              <option value="">-- Select a patient --</option>
-              {patients.map((patient: any) => (
-                <option key={patient.id} value={patient.id}>
-                  {patient.name} - {patient.age} years - {patient.phone}
-                </option>
-              ))}
+              <option value="">{patientsLoading ? 'Loading patients...' : '-- Select a patient --'}</option>
+              {patients && patients.length > 0 ? (
+                patients.map((patient: any) => (
+                  <option key={patient.id} value={patient.id}>
+                    {patient.name} - {patient.age} years - {patient.phone}
+                  </option>
+                ))
+              ) : (
+                !patientsLoading && <option disabled>No patients found</option>
+              )}
             </select>
             {errors.patientId && <span className="error-message">{errors.patientId.message}</span>}
           </div>
