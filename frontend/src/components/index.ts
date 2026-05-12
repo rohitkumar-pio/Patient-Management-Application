@@ -4,3 +4,4 @@ export { default as PatientSearch } from './PatientSearch';
 export { PatientForm } from './PatientForm';
 export { ToastContainer } from './Toast';
 export { ConfirmDialog } from './ConfirmDialog';
+export { VitalsInput } from './VitalsInput';
