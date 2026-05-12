@@ -6,3 +6,4 @@ export { ToastContainer } from './Toast';
 export { ConfirmDialog } from './ConfirmDialog';
 export { VitalsInput } from './VitalsInput';
 export { MedicationList } from './MedicationList';
+export { PrescriptionPreview } from './PrescriptionPreview';
