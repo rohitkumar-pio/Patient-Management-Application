@@ -3,4 +3,5 @@
 
 export * as patientService from './patientService';
 export * as visitService from './visitService';
+export * as prescriptionGenerator from './prescriptionGenerator';
 

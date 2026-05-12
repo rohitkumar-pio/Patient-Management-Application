@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 import patientRoutes from './routes/patients';
 import visitRoutes from './routes/visits';
+import prescriptionRoutes from './routes/prescription';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 
@@ -51,7 +52,8 @@ app.get('/', (_req: Request, res: Response) => {
       health: '/api/health',
       auth: '/api/auth',
       patients: '/api/patients',
-      visits: '/api/visits'
+      visits: '/api/visits',
+      prescription: '/api/visits/:id/prescription'
     }
   });
 });
@@ -60,6 +62,7 @@ app.get('/', (_req: Request, res: Response) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/visits', visitRoutes);
+app.use('/api/visits', prescriptionRoutes);
 
 // 404 handler - must be after all routes
 app.use(notFoundHandler);
