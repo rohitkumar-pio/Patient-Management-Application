@@ -3,9 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../../lib/api';
 import { useAuthStore } from '../../stores/authStore';
-import { ConfirmDialog } from '../../components';
+import { ConfirmDialog, PrescriptionPreview } from '../../components';
 import { showToast } from '../../components/Toast';
-import { Patient } from '../../types';
+import { Patient, Visit } from '../../types';
 import './PatientProfile.scss';
 
 type TabType = 'overview' | 'visits' | 'appointments';
@@ -19,6 +19,8 @@ export const PatientProfile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showPrescriptionPreview, setShowPrescriptionPreview] = useState(false);
+  const [selectedVisitId, setSelectedVisitId] = useState<string | null>(null);
 
   // Fetch patient data
   const { data: patient, isLoading, error } = useQuery<Patient>({
@@ -27,6 +29,16 @@ export const PatientProfile: React.FC = () => {
       const response = await apiClient.get(`/patients/${id}`);
       return response.data.data; // Extract data from {success, data} response
     },
+  });
+
+  // Fetch patient visits
+  const { data: visitsData, isLoading: visitsLoading } = useQuery<Visit[]>({
+    queryKey: ['patient-visits', id],
+    queryFn: async () => {
+      const response = await apiClient.get(`/patients/${id}/visits`);
+      return response.data.data; // Extract data from {success, data} response
+    },
+    enabled: !!id && activeTab === 'visits',
   });
 
   const handleLogout = () => {
@@ -60,6 +72,11 @@ export const PatientProfile: React.FC = () => {
 
   const handleScheduleAppointment = () => {
     navigate(`/appointments/new?patientId=${id}`);
+  };
+
+  const handlePrintPrescription = (visitId: string) => {
+    setSelectedVisitId(visitId);
+    setShowPrescriptionPreview(true);
   };
 
   if (isLoading) {
@@ -307,10 +324,75 @@ export const PatientProfile: React.FC = () => {
               {activeTab === 'visits' && (
                 <div className="tab-panel">
                   <h3>Visit History</h3>
-                  <p>Patient visit history will be implemented in Phase 1F.</p>
-                  <button onClick={() => navigate(`/patients/${id}/history`)} className="btn-secondary">
-                    View Full History
-                  </button>
+                  {visitsLoading ? (
+                    <div className="loading-state">
+                      <p>Loading visits...</p>
+                    </div>
+                  ) : visitsData && visitsData.length > 0 ? (
+                    <div className="visits-list">
+                      {visitsData.map((visit) => (
+                        <div key={visit.id} className="visit-card">
+                          <div className="visit-header">
+                            <div className="visit-date">
+                              <span className="date-icon">📅</span>
+                              <span className="date-text">
+                                {new Date(visit.visitDate).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric',
+                                })}
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => handlePrintPrescription(visit.id)}
+                              className="btn-print-prescription"
+                              title="Print Prescription"
+                            >
+                              🖨️ Print Prescription
+                            </button>
+                          </div>
+                          <div className="visit-body">
+                            <div className="visit-section">
+                              <strong>Vitals:</strong>
+                              <span className="vitals-inline">
+                                Temp: {visit.temperature}°C | BP: {visit.bloodPressure} mmHg | Pulse: {visit.pulse} bpm
+                              </span>
+                            </div>
+                            <div className="visit-section">
+                              <strong>Complaints:</strong>
+                              <p className="visit-text">{visit.complaints}</p>
+                            </div>
+                            {visit.diagnosis && (
+                              <div className="visit-section">
+                                <strong>Diagnosis:</strong>
+                                <p className="visit-text">{visit.diagnosis}</p>
+                              </div>
+                            )}
+                            {visit.medications && visit.medications.length > 0 && (
+                              <div className="visit-section">
+                                <strong>Medications:</strong>
+                                <ul className="medications-list">
+                                  {visit.medications.map((med) => (
+                                    <li key={med.id}>
+                                      <strong>{med.name}</strong> - {med.dosage}, {med.frequency}, {med.duration}
+                                      {med.instructions && <span className="med-instructions"> ({med.instructions})</span>}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="empty-state">
+                      <p>No visits recorded yet.</p>
+                      <button onClick={handleNewVisit} className="btn-primary">
+                        Record First Visit
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -339,6 +421,17 @@ export const PatientProfile: React.FC = () => {
         onCancel={() => setShowDeleteDialog(false)}
         variant="danger"
       />
+
+      {/* Prescription Preview Modal */}
+      {showPrescriptionPreview && selectedVisitId && (
+        <PrescriptionPreview
+          visitId={selectedVisitId}
+          onClose={() => {
+            setShowPrescriptionPreview(false);
+            setSelectedVisitId(null);
+          }}
+        />
+      )}
     </div>
   );
 };

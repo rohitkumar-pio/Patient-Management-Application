@@ -16,6 +16,31 @@ export interface Patient {
   };
 }
 
+// Visit and Medication types
+export interface Medication {
+  id: string;
+  name: string;
+  dosage: string;
+  frequency: string;
+  duration: string;
+  instructions?: string;
+}
+
+export interface Visit {
+  id: string;
+  patientId: string;
+  visitDate: string;
+  complaints: string;
+  diagnosis?: string;
+  temperature: number;
+  bloodPressure: string;
+  pulse: number;
+  createdAt: string;
+  updatedAt: string;
+  medications: Medication[];
+  patient?: Patient;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;
