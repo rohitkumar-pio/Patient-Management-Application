@@ -51,6 +51,8 @@ export const NewVisitForm: React.FC = () => {
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(false);
   const [showPrescriptionPreview, setShowPrescriptionPreview] = useState(false);
   const [savedVisitId, setSavedVisitId] = useState<string | null>(null);
+  const [showSaveOptions, setShowSaveOptions] = useState(false);
+  const [savedPatientId, setSavedPatientId] = useState<string | null>(null);
 
   const { register, control, handleSubmit, formState: { errors }, watch, reset } = useForm<VisitFormData>({
     resolver: zodResolver(visitFormSchema),
@@ -216,8 +218,10 @@ export const NewVisitForm: React.FC = () => {
         setSavedVisitId(visitId);
         setShowPrescriptionPreview(true);
       } else {
-        // Redirect to patient profile
-        navigate(`/patients/${data.patientId}`);
+        // Let the user choose to print or go straight to the patient profile
+        setSavedVisitId(visitId);
+        setSavedPatientId(data.patientId);
+        setShowSaveOptions(true);
       }
     } catch (error: any) {
       console.error('Error creating visit:', error);
@@ -538,6 +542,25 @@ export const NewVisitForm: React.FC = () => {
         />
       )}
 
+      {/* Save Success Options */}
+      {showSaveOptions && savedPatientId && (
+        <ConfirmDialog
+          isOpen={showSaveOptions}
+          title="Visit Saved"
+          message="The consultation has been recorded successfully. What would you like to do next?"
+          onConfirm={() => {
+            setShowSaveOptions(false);
+            setShowPrescriptionPreview(true);
+          }}
+          onCancel={() => {
+            setShowSaveOptions(false);
+            navigate(`/patients/${savedPatientId}`);
+          }}
+          confirmText="Print Prescription"
+          cancelText="View Patient Profile"
+        />
+      )}
+
       {/* Prescription Preview Modal */}
       {showPrescriptionPreview && savedVisitId && (
         <PrescriptionPreview
@@ -545,7 +568,7 @@ export const NewVisitForm: React.FC = () => {
           onClose={() => {
             setShowPrescriptionPreview(false);
             // Redirect to patient profile after closing
-            const patientId = watch('patientId');
+            const patientId = watch('patientId') || savedPatientId;
             if (patientId) {
               navigate(`/patients/${patientId}`);
             }
