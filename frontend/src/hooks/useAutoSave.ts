@@ -62,12 +62,17 @@ export const useAutoSave = ({
     }
   };
 
+  // Always call the latest saveDraft without re-running effects when `data`
+  // changes (callers typically pass a new object every render, e.g. RHF watch()).
+  const saveDraftRef = useRef(saveDraft);
+  saveDraftRef.current = saveDraft;
+
   // Auto-save effect
   useEffect(() => {
     if (!enabled) return;
 
     timerRef.current = setInterval(() => {
-      saveDraft();
+      saveDraftRef.current();
     }, saveInterval);
 
     return () => {
@@ -75,16 +80,14 @@ export const useAutoSave = ({
         clearInterval(timerRef.current);
       }
     };
-  }, [enabled, saveInterval, saveDraft]);
+  }, [enabled, saveInterval]);
 
-  // Save on unmount
+  // Save on unmount (saveDraft itself checks `enabled` and `data`)
   useEffect(() => {
     return () => {
-      if (enabled && data) {
-        saveDraft();
-      }
+      saveDraftRef.current();
     };
-  }, [enabled, data, saveDraft]);
+  }, []);
 
   return {
     isDraft,

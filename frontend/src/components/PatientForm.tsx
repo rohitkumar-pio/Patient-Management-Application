@@ -85,7 +85,10 @@ export const PatientForm: React.FC<PatientFormProps> = ({
   useEffect(() => {
     if (dateOfBirth) {
       const today = new Date();
-      const birthDate = new Date(dateOfBirth);
+      // Parse YYYY-MM-DD as a local date; new Date('YYYY-MM-DD') is UTC midnight,
+      // which shifts the day (and possibly the age) in timezones west of UTC.
+      const [year, month, day] = dateOfBirth.split('-').map(Number);
+      const birthDate = new Date(year, month - 1, day);
       let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
       
@@ -134,15 +137,17 @@ export const PatientForm: React.FC<PatientFormProps> = ({
       console.error('Error saving patient:', error);
       
       // Handle duplicate phone error
+      let message: string;
       if (error.response?.status === 409) {
-        setServerError('A patient with this phone number already exists');
+        message = 'A patient with this phone number already exists';
       } else if (error.response?.data?.message) {
-        setServerError(error.response.data.message);
+        message = error.response.data.message;
       } else {
-        setServerError('Failed to save patient. Please try again.');
+        message = 'Failed to save patient. Please try again.';
       }
-      
-      showToast(serverError || 'Failed to save patient', 'error');
+
+      setServerError(message);
+      showToast(message, 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -158,7 +163,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({
 
   return (
     <div className="patient-form-container">
-      <form onSubmit={handleSubmit(onSubmit)} className="patient-form">
+      <form onSubmit={handleSubmit(onSubmit)} className="patient-form" noValidate>
         <div className="form-header">
           <h2>{isEditMode ? 'Edit Patient' : 'Add New Patient'}</h2>
         </div>

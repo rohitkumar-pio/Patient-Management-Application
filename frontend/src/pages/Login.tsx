@@ -92,7 +92,7 @@ export default function Login() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="login-form">
+        <form onSubmit={handleSubmit(onSubmit)} className="login-form" noValidate>
           {/* Email Field */}
           <div className="form-group">
             <label htmlFor="email" className="form-label form-label-required">
@@ -100,8 +100,9 @@ export default function Login() {
             </label>
             <input
               {...register('email')}
-              type="text"
+              type="email"
               id="email"
+              autoComplete="email"
               placeholder="doctor@test.com"
               className={`form-input ${errors.email ? 'form-input-error' : ''}`}
             />

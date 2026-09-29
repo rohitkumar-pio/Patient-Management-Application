@@ -102,7 +102,9 @@ export const NewVisitForm: React.FC = () => {
   const selectedPatient = selectedPatientResponse;
 
   // Auto-save functionality
-  const storageKey = `visit-draft-${selectedPatientId || 'new'}-${Date.now()}`;
+  // Stable key: it must be identical across renders (and before a patient is
+  // selected) so the draft can be resumed on mount and cleared after save.
+  const storageKey = 'visit-draft';
   const { isDraft, lastSaved, loadDraft, clearDraft } = useAutoSave({
     data: formData,
     enabled: autoSaveEnabled && !!selectedPatientId,

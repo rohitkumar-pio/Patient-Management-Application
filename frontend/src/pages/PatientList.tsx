@@ -385,7 +385,7 @@ const PatientList: React.FC = () => {
                             </span>
                           </td>
                           <td>{patient.phone}</td>
-                          <td className="patient-visits">{patient._count?.visits || 0}</td>
+                          <td className="patient-visits">{patient.visitCount ?? patient._count?.visits ?? 0}</td>
                           <td className="table-actions">
                             <button
                               onClick={(e) => {
