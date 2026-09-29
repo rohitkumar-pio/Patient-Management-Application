@@ -78,8 +78,7 @@ describe('PatientForm Component', () => {
     it('should display form title for new patient', () => {
       renderWithProviders(<PatientForm />);
 
-      const title = screen.queryByText(/new patient|add patient|create patient/i);
-      expect(title).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /add new patient/i })).toBeInTheDocument();
     });
 
     it('should populate form fields in edit mode', () => {
@@ -98,8 +97,15 @@ describe('PatientForm Component', () => {
 
       renderWithProviders(<PatientForm patient={existingPatient} />);
 
+      // Age is derived from the date of birth (which takes precedence over the stored age)
+      const today = new Date();
+      const expectedAge = today.getFullYear() - 1989; // birthday (Jan 1) already passed
+
+      expect(screen.getByRole('heading', { name: /edit patient/i })).toBeInTheDocument();
       expect(screen.getByDisplayValue('John Doe')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('35')).toBeInTheDocument();
+      expect(screen.getByLabelText(/date of birth/i)).toHaveValue('1989-01-01');
+      expect(screen.getByLabelText(/^age/i)).toHaveValue(expectedAge);
+      expect(screen.getByLabelText(/gender/i)).toHaveValue('Male');
       expect(screen.getByDisplayValue('1234567890')).toBeInTheDocument();
       expect(screen.getByDisplayValue('123 Main St')).toBeInTheDocument();
     });
@@ -218,8 +224,7 @@ describe('PatientForm Component', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        const errorMessage = screen.queryByText(/phone/i);
-        expect(errorMessage).toBeInTheDocument();
+        expect(screen.getByText(/phone must contain only digits/i)).toBeInTheDocument();
       });
 
       expect(apiClient.default.post).not.toHaveBeenCalled();
@@ -258,7 +263,8 @@ describe('PatientForm Component', () => {
       await user.clear(ageInput);
       await user.type(ageInput, '45');
 
-      expect(ageInput).toHaveValue('45');
+      // type="number" inputs report a numeric value
+      expect(ageInput).toHaveValue(45);
     });
   });
 
@@ -348,10 +354,10 @@ describe('PatientForm Component', () => {
 
     it('should show loading state during submission', async () => {
       const user = userEvent.setup();
+      // Keep the request pending until the loading state has been asserted
+      let resolvePost!: (value: unknown) => void;
       vi.mocked(apiClient.default.post).mockImplementation(
-        () => new Promise(resolve => setTimeout(() => resolve({
-          data: { success: true, data: {} }
-        }), 100))
+        () => new Promise(resolve => { resolvePost = resolve; })
       );
 
       renderWithProviders(<PatientForm />);
@@ -359,15 +365,20 @@ describe('PatientForm Component', () => {
       // Fill required fields
       await user.type(screen.getByLabelText(/name/i), 'John Doe');
       await user.type(screen.getByLabelText(/phone/i), '1234567890');
+      await user.type(screen.getByLabelText(/age/i), '35'); // age or DOB is required
 
       const submitButton = screen.getByRole('button', { name: /create patient|save|submit/i });
       await user.click(submitButton);
 
       // Check for loading state
+      const loadingButton = await screen.findByRole('button', { name: /creating/i });
+      expect(loadingButton).toBeDisabled();
+      expect(screen.getByRole('button', { name: /cancel/i })).toBeDisabled();
+      expect(apiClient.default.post).toHaveBeenCalledTimes(1);
+
+      resolvePost({ data: { success: true, data: {} } });
       await waitFor(() => {
-        const loadingButton = screen.queryByRole('button', { name: /saving|loading/i }) ||
-                             screen.getByRole('button', { name: /create patient|save|submit/i });
-        expect(loadingButton).toBeDisabled();
+        expect(screen.queryByRole('button', { name: /creating/i })).not.toBeInTheDocument();
       });
     });
 
@@ -391,6 +402,7 @@ describe('PatientForm Component', () => {
       // Fill and submit form
       await user.type(screen.getByLabelText(/name/i), 'John Doe');
       await user.type(screen.getByLabelText(/phone/i), '1234567890');
+      await user.type(screen.getByLabelText(/age/i), '35'); // age or DOB is required
 
       const submitButton = screen.getByRole('button', { name: /create patient|save|submit/i });
       await user.click(submitButton);
@@ -420,6 +432,7 @@ describe('PatientForm Component', () => {
       // Fill form
       await user.type(screen.getByLabelText(/name/i), 'John Doe');
       await user.type(screen.getByLabelText(/phone/i), '1234567890');
+      await user.type(screen.getByLabelText(/age/i), '35'); // age or DOB is required
 
       const submitButton = screen.getByRole('button', { name: /create patient|save|submit/i });
       await user.click(submitButton);
@@ -448,6 +461,7 @@ describe('PatientForm Component', () => {
       // Fill form
       await user.type(screen.getByLabelText(/name/i), 'John Doe');
       await user.type(screen.getByLabelText(/phone/i), '1234567890');
+      await user.type(screen.getByLabelText(/age/i), '35'); // age or DOB is required
 
       const submitButton = screen.getByRole('button', { name: /create patient|save|submit/i });
       await user.click(submitButton);
@@ -468,6 +482,7 @@ describe('PatientForm Component', () => {
       // Fill form
       await user.type(screen.getByLabelText(/name/i), 'John Doe');
       await user.type(screen.getByLabelText(/phone/i), '1234567890');
+      await user.type(screen.getByLabelText(/age/i), '35'); // age or DOB is required
 
       const submitButton = screen.getByRole('button', { name: /create patient|save|submit/i });
       await user.click(submitButton);

@@ -59,10 +59,11 @@ describe('Login Component', () => {
   it('should render login form with all required fields', () => {
     renderLogin();
 
-    expect(screen.getByText(/Patient Management System/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /user login/i })).toBeInTheDocument();
+    expect(screen.getByText(/sign in to continue to patient management/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^login$/i })).toBeInTheDocument();
   });
 
   it('should have email input field', () => {
@@ -84,7 +85,7 @@ describe('Login Component', () => {
   it('should have submit button', () => {
     renderLogin();
 
-    const submitButton = screen.getByRole('button', { name: /sign in/i });
+    const submitButton = screen.getByRole('button', { name: /^login$/i });
     expect(submitButton).toBeInTheDocument();
     expect(submitButton).not.toBeDisabled();
   });
@@ -129,15 +130,15 @@ describe('Login Component', () => {
   it('should render with correct styling classes', () => {
     const { container } = renderLogin();
 
-    // Check for gradient background
-    const gradientDiv = container.querySelector('.bg-gradient-to-br');
-    expect(gradientDiv).toBeTruthy();
+    // Styling moved from Tailwind utilities to Login.scss classes
+    expect(container.querySelector('.login-container')).toBeTruthy();
+    expect(container.querySelector('.login-card')).toBeTruthy();
   });
 
   it('should have form element', () => {
     renderLogin();
 
-    const form = screen.getByRole('button', { name: /sign in/i }).closest('form');
+    const form = screen.getByRole('button', { name: /^login$/i }).closest('form');
     expect(form).toBeInTheDocument();
   });
 });
