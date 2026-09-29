@@ -50,10 +50,12 @@ const mockToken = generateToken({
 // Mock patient data
 const mockPatientId = '550e8400-e29b-41d4-a716-446655440000';  // Valid UUID
 const mockPatient2Id = '550e8400-e29b-41d4-a716-446655440001'; // Valid UUID
+const nonExistentPatientId = '550e8400-e29b-41d4-a716-446655449999'; // Valid UUID, never mocked as existing
 
 describe('Patient Management API', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    // resetAllMocks (not clearAllMocks) also drops unconsumed mockResolvedValueOnce queues between tests
+    jest.resetAllMocks();
     // Mock user authentication
     (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
   });
@@ -79,6 +81,7 @@ describe('Patient Management API', () => {
         dateOfBirth: new Date(patientData.dateOfBirth),
         createdAt: new Date(),
         updatedAt: new Date(),
+        _count: { visits: 0 },
       };
 
       (prisma.patient.findUnique as jest.Mock).mockResolvedValue(null); // No duplicate
@@ -308,7 +311,7 @@ describe('Patient Management API', () => {
       (prisma.patient.findUnique as jest.Mock).mockResolvedValue(null);
 
       const response = await request(app)
-        .get('/api/patients/non-existent-id')
+        .get(`/api/patients/${nonExistentPatientId}`)
         .set('Authorization', `Bearer ${mockToken}`)
         .expect(404);
 
@@ -327,7 +330,7 @@ describe('Patient Management API', () => {
       };
 
       const existingPatient = {
-        id: 'patient-1',
+        id: mockPatientId,
         name: 'John Doe',
         age: 35,
         gender: 'Male',
@@ -342,6 +345,7 @@ describe('Patient Management API', () => {
         ...existingPatient,
         ...updateData,
         updatedAt: new Date(),
+        _count: { visits: 0 },
       };
 
       (prisma.patient.findUnique as jest.Mock)
@@ -350,7 +354,7 @@ describe('Patient Management API', () => {
       (prisma.patient.update as jest.Mock).mockResolvedValue(updatedPatient);
 
       const response = await request(app)
-        .put('/api/patients/patient-1')
+        .put(`/api/patients/${mockPatientId}`)
         .set('Authorization', `Bearer ${mockToken}`)
         .send(updateData)
         .expect(200);
@@ -367,7 +371,7 @@ describe('Patient Management API', () => {
       };
 
       const existingPatient = {
-        id: 'patient-1',
+        id: mockPatientId,
         name: 'John Doe',
         age: 35,
         gender: 'Male',
@@ -395,7 +399,7 @@ describe('Patient Management API', () => {
         .mockResolvedValueOnce(duplicatePatient);
 
       const response = await request(app)
-        .put('/api/patients/patient-1')
+        .put(`/api/patients/${mockPatientId}`)
         .set('Authorization', `Bearer ${mockToken}`)
         .send(updateData)
         .expect(409);
@@ -409,7 +413,7 @@ describe('Patient Management API', () => {
       (prisma.patient.findUnique as jest.Mock).mockResolvedValue(null);
 
       const response = await request(app)
-        .put('/api/patients/non-existent-id')
+        .put(`/api/patients/${nonExistentPatientId}`)
         .set('Authorization', `Bearer ${mockToken}`)
         .send({ name: 'Updated Name' })
         .expect(404);
@@ -451,7 +455,7 @@ describe('Patient Management API', () => {
       (prisma.patient.findUnique as jest.Mock).mockResolvedValue(null);
 
       const response = await request(app)
-        .delete('/api/patients/non-existent-id')
+        .delete(`/api/patients/${nonExistentPatientId}`)
         .set('Authorization', `Bearer ${mockToken}`)
         .expect(404);
 

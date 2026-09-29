@@ -41,8 +41,9 @@ jest.mock('@prisma/client', () => {
 
 describe('Visit API Endpoints', () => {
   let authToken: string;
-  let mockPatientId: string;
-  let mockVisitId: string;
+  // Defined at declaration: describe-level fixtures below are built before beforeAll runs
+  const mockPatientId = '123e4567-e89b-12d3-a456-426614174000';
+  const mockVisitId = '223e4567-e89b-12d3-a456-426614174000';
 
   beforeAll(() => {
     // Generate test JWT token
@@ -51,9 +52,6 @@ describe('Visit API Endpoints', () => {
       process.env.JWT_SECRET || 'test-secret',
       { expiresIn: '1h' }
     );
-
-    mockPatientId = '123e4567-e89b-12d3-a456-426614174000';
-    mockVisitId = '223e4567-e89b-12d3-a456-426614174000';
   });
 
   afterEach(() => {
@@ -109,9 +107,9 @@ describe('Visit API Endpoints', () => {
       }));
 
       // Mock Prisma transaction
-      (prisma.$transaction as jest.Mock).mockResolvedValue([
+      (prisma.$transaction as jest.Mock).mockResolvedValue(
         { ...mockVisit, patient: mockPatient, medications: mockMedications },
-      ]);
+      );
 
       (prisma.patient.findUnique as jest.Mock).mockResolvedValue(mockPatient);
 
@@ -267,9 +265,9 @@ describe('Visit API Endpoints', () => {
         updatedAt: new Date(),
       };
 
-      (prisma.$transaction as jest.Mock).mockResolvedValue([
-        { ...mockVisit, patient: mockPatient, medications: [] },
-      ]);
+      (prisma.$transaction as jest.Mock).mockResolvedValue(
+        { ...mockVisit, patient: mockPatient, medications: [] }
+      );
 
       (prisma.patient.findUnique as jest.Mock).mockResolvedValue(mockPatient);
 
@@ -544,9 +542,9 @@ describe('Visit API Endpoints', () => {
         createdAt: new Date(),
       }));
 
-      (prisma.$transaction as jest.Mock).mockResolvedValue([
+      (prisma.$transaction as jest.Mock).mockResolvedValue(
         { ...mockVisit, patient: mockPatient, medications: mockMedications },
-      ]);
+      );
 
       (prisma.patient.findUnique as jest.Mock).mockResolvedValue(mockPatient);
 

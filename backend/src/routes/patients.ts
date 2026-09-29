@@ -9,7 +9,7 @@ import {
 } from '../controllers/patientController';
 import { authenticate } from '../middleware/auth';
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * @route   GET /api/patients/search

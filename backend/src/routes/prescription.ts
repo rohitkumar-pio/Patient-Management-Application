@@ -3,7 +3,7 @@ import { authenticate } from '../middleware/auth';
 import { generatePrescriptionPDF, getPrescriptionFilename } from '../services/prescriptionGenerator';
 import { prisma } from '../config/database';
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * GET /api/visits/:id/prescription

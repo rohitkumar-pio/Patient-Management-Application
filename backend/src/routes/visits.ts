@@ -2,7 +2,7 @@ import { Router } from 'express';
 import * as visitController from '../controllers/visitController';
 import { authenticate } from '../middleware/auth';
 
-const router = Router();
+const router: Router = Router();
 
 // All routes are protected with authentication
 router.use(authenticate);

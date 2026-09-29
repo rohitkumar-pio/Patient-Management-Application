@@ -128,9 +128,9 @@ export const getPatients = async (
   return {
     patients,
     pagination: {
-      currentPage: page,
+      page,
       totalPages,
-      totalCount,
+      total: totalCount,
       limit,
       hasNextPage,
       hasPreviousPage,
