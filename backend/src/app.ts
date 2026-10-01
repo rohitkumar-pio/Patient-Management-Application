@@ -6,6 +6,7 @@ import authRoutes from './routes/auth';
 import patientRoutes from './routes/patients';
 import visitRoutes from './routes/visits';
 import prescriptionRoutes from './routes/prescription';
+import appointmentRoutes from './routes/appointments';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 
@@ -53,6 +54,7 @@ app.get('/', (_req: Request, res: Response) => {
       auth: '/api/auth',
       patients: '/api/patients',
       visits: '/api/visits',
+      appointments: '/api/appointments',
       prescription: '/api/visits/:id/prescription'
     }
   });
@@ -63,6 +65,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/visits', visitRoutes);
 app.use('/api/visits', prescriptionRoutes);
+app.use('/api/appointments', appointmentRoutes);
 
 // 404 handler - must be after all routes
 app.use(notFoundHandler);
