@@ -41,6 +41,20 @@ export interface Visit {
   patient?: Patient;
 }
 
+// Appointment types
+export type AppointmentStatus = 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
+
+export interface Appointment {
+  id: string;
+  patientId: string;
+  appointmentDate: string;
+  status: AppointmentStatus;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  patient: Pick<Patient, 'id' | 'name' | 'phone' | 'age' | 'gender'>;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;

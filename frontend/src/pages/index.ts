@@ -5,3 +5,4 @@ export { default as PatientList } from './PatientList';
 export { NewPatient } from './NewPatient/NewPatient';
 export { EditPatient } from './EditPatient/EditPatient';
 export { default as PatientProfile } from './Patients/PatientProfile';
+export { AppointmentsPage } from './Appointments/AppointmentsPage';
