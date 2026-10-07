@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../../lib/api';
 import { useAuthStore } from '../../stores/authStore';
-import { ConfirmDialog, PrescriptionPreview } from '../../components';
+import { ConfirmDialog, PrescriptionPreview, AddAppointmentModal } from '../../components';
 import { showToast } from '../../components/Toast';
 import { Patient, Visit } from '../../types';
 import './PatientProfile.scss';
@@ -21,6 +21,7 @@ export const PatientProfile: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showPrescriptionPreview, setShowPrescriptionPreview] = useState(false);
   const [selectedVisitId, setSelectedVisitId] = useState<string | null>(null);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   // Fetch patient data
   const { data: patient, isLoading, error } = useQuery<Patient>({
@@ -71,7 +72,7 @@ export const PatientProfile: React.FC = () => {
   };
 
   const handleScheduleAppointment = () => {
-    navigate(`/appointments/new?patientId=${id}`);
+    setShowScheduleModal(true);
   };
 
   const handlePrintPrescription = (visitId: string) => {
@@ -420,6 +421,13 @@ export const PatientProfile: React.FC = () => {
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteDialog(false)}
         variant="danger"
+      />
+
+      {/* Schedule Appointment Modal (patient pre-selected) */}
+      <AddAppointmentModal
+        isOpen={showScheduleModal}
+        patient={{ id: patient.id, name: patient.name, phone: patient.phone }}
+        onClose={() => setShowScheduleModal(false)}
       />
 
       {/* Prescription Preview Modal */}

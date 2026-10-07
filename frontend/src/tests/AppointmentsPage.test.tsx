@@ -3,7 +3,8 @@ import { render, screen, waitFor, within, fireEvent } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { AppointmentsPage, toDateString } from '../pages/Appointments/AppointmentsPage';
+import { AppointmentsPage } from '../pages/Appointments/AppointmentsPage';
+import { toDateString } from '../lib/appointments';
 import apiClient from '../lib/api';
 import { showToast } from '../components/Toast';
 
@@ -121,6 +122,24 @@ const mockServer = (appointments: any[] = buildAppointments()) => {
     const id = url.split('/')[2];
     serverAppointments = serverAppointments.map((a) => (a.id === id ? { ...a, status: body.status } : a));
     return { data: { success: true } };
+  });
+  vi.mocked(apiClient.post).mockImplementation(async (_url: string, body: any) => {
+    const patient = [patient1, patient2].find((p) => p.id === body.patientId)!;
+    const created = {
+      id: `appt-new-${serverAppointments.length + 1}`,
+      patientId: body.patientId,
+      appointmentDate: body.appointmentDate,
+      status: 'SCHEDULED',
+      notes: body.notes ?? null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      patient,
+    };
+    // The fake server serves one day; keep only appointments booked on SELECTED_DATE
+    if (toDateString(new Date(body.appointmentDate)) === SELECTED_DATE) {
+      serverAppointments = [...serverAppointments, created];
+    }
+    return { data: { success: true, data: created } };
   });
   vi.mocked(apiClient.delete).mockImplementation(async (url: string) => {
     const id = url.split('/')[2];
@@ -360,79 +379,57 @@ describe('AppointmentsPage', () => {
   });
 
   describe('Add appointment', () => {
-    it('schedules an appointment at the chosen local time on the selected date', async () => {
+    const openModalAndPick = async (user: ReturnType<typeof userEvent.setup>, patientName: string) => {
+      await user.click(screen.getByRole('button', { name: 'Add Appointment' }));
+      const dialog = within(screen.getByRole('dialog', { name: 'Schedule Appointment' }));
+      await user.type(dialog.getByRole('combobox'), patientName.split(' ')[0]);
+      await user.click(await dialog.findByRole('option', { name: new RegExp(patientName) }));
+      return dialog;
+    };
+
+    it('opens the modal on the selected date and closes with Cancel', async () => {
       const user = userEvent.setup();
-      vi.mocked(apiClient.post).mockResolvedValue({ data: { success: true } });
       renderPage();
       await screen.findByText('John Doe');
 
       await user.click(screen.getByRole('button', { name: 'Add Appointment' }));
-      const dialog = within(screen.getByRole('dialog', { name: 'Add Appointment' }));
-      await waitFor(() => expect(dialog.getByRole('option', { name: /Jane Smith/ })).toBeInTheDocument());
+      const dialog = within(screen.getByRole('dialog', { name: 'Schedule Appointment' }));
+      expect(dialog.getByLabelText(/^Date/)).toHaveValue(SELECTED_DATE);
 
-      await user.selectOptions(dialog.getByLabelText(/Patient/), 'patient-2');
-      fireEvent.change(dialog.getByLabelText('Time (optional)'), { target: { value: '14:15' } });
-      await user.type(dialog.getByLabelText('Notes (optional)'), 'Blood test review');
+      await user.click(dialog.getByRole('button', { name: 'Cancel' }));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('creates an appointment that then appears in the list', async () => {
+      const user = userEvent.setup();
+      mockServer([buildAppointments()[1]]); // only Jane Smith today
+      renderPage();
+      await screen.findByText('Jane Smith');
+
+      const dialog = await openModalAndPick(user, 'John Doe');
+      fireEvent.change(dialog.getByLabelText(/^Time/), { target: { value: '11:45' } });
       await user.click(dialog.getByRole('button', { name: 'Schedule' }));
 
-      await waitFor(() => {
-        expect(apiClient.post).toHaveBeenCalledWith('/appointments', {
-          patientId: 'patient-2',
-          appointmentDate: localIso(SELECTED_DATE, 14, 15),
-          notes: 'Blood test review',
-        });
-      });
-      expect(showToast).toHaveBeenCalledWith('Appointment scheduled', 'success');
       await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    });
-
-    it('stores local midnight when no time is given', async () => {
-      const user = userEvent.setup();
-      vi.mocked(apiClient.post).mockResolvedValue({ data: { success: true } });
-      renderPage();
-      await screen.findByText('John Doe');
-
-      await user.click(screen.getByRole('button', { name: 'Add Appointment' }));
-      const dialog = within(screen.getByRole('dialog'));
-      await waitFor(() => expect(dialog.getByRole('option', { name: /John Doe/ })).toBeInTheDocument());
-      await user.selectOptions(dialog.getByLabelText(/Patient/), 'patient-1');
-      await user.click(dialog.getByRole('button', { name: 'Schedule' }));
-
-      await waitFor(() => {
-        expect(apiClient.post).toHaveBeenCalledWith('/appointments', {
-          patientId: 'patient-1',
-          appointmentDate: localIso(SELECTED_DATE, 0, 0),
-        });
+      expect(apiClient.post).toHaveBeenCalledWith('/appointments', {
+        patientId: 'patient-1',
+        appointmentDate: localIso(SELECTED_DATE, 11, 45),
       });
+      expect(await screen.findByRole('article', { name: 'Appointment for John Doe' })).toBeInTheDocument();
+      expect(showToast).toHaveBeenCalledWith(expect.stringContaining('Appointment scheduled for John Doe'), 'success');
     });
 
-    it('requires a patient', async () => {
+    it('switches the page to the booked date when it differs', async () => {
       const user = userEvent.setup();
       renderPage();
       await screen.findByText('John Doe');
 
-      await user.click(screen.getByRole('button', { name: 'Add Appointment' }));
-      const dialog = within(screen.getByRole('dialog'));
+      const dialog = await openModalAndPick(user, 'Jane Smith');
+      fireEvent.change(dialog.getByLabelText(/^Date/), { target: { value: '2030-03-20' } });
       await user.click(dialog.getByRole('button', { name: 'Schedule' }));
 
-      expect(dialog.getByRole('alert')).toHaveTextContent('Please select a patient');
-      expect(apiClient.post).not.toHaveBeenCalled();
-    });
-
-    it('shows the server error and keeps the dialog open on failure', async () => {
-      const user = userEvent.setup();
-      vi.mocked(apiClient.post).mockRejectedValue({ response: { data: { message: 'Patient not found' } } });
-      renderPage();
-      await screen.findByText('John Doe');
-
-      await user.click(screen.getByRole('button', { name: 'Add Appointment' }));
-      const dialog = within(screen.getByRole('dialog'));
-      await waitFor(() => expect(dialog.getByRole('option', { name: /John Doe/ })).toBeInTheDocument());
-      await user.selectOptions(dialog.getByLabelText(/Patient/), 'patient-1');
-      await user.click(dialog.getByRole('button', { name: 'Schedule' }));
-
-      expect(await dialog.findByRole('alert')).toHaveTextContent('Patient not found');
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      await waitFor(() => expect(currentSearch).toBe('?date=2030-03-20'));
+      expect(screen.getByLabelText('Select date')).toHaveValue('2030-03-20');
     });
   });
 

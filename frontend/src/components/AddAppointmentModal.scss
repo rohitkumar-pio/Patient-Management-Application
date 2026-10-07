@@ -1,0 +1,286 @@
+// AddAppointmentModal SCSS - Matching Dashboard Design System
+
+$color-primary: #1e40af;
+$color-primary-dark: #1e3a8a;
+$color-primary-light: #3b82f6;
+$color-primary-palest: #dbeafe;
+$color-white: #ffffff;
+$color-gray-50: #f9fafb;
+$color-gray-200: #e5e7eb;
+$color-gray-300: #d1d5db;
+$color-gray-400: #9ca3af;
+$color-gray-500: #6b7280;
+$color-gray-700: #374151;
+$color-gray-900: #111827;
+$color-danger: #ef4444;
+
+$spacing-xs: 0.25rem;
+$spacing-sm: 0.5rem;
+$spacing-md: 1rem;
+$spacing-lg: 1.5rem;
+
+$radius-md: 0.5rem;
+$radius-lg: 0.75rem;
+
+@mixin input-base {
+  width: 100%;
+  padding: $spacing-sm 0.75rem;
+  border: 1px solid $color-gray-300;
+  border-radius: $radius-md;
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: $color-gray-900;
+  background: $color-white;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: $color-primary-light;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+
+  &.invalid {
+    border-color: $color-danger;
+  }
+}
+
+.add-appointment-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-md;
+  z-index: 1000;
+}
+
+.add-appointment-modal {
+  width: 100%;
+  max-width: 32rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  background: $color-white;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.add-appointment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-lg;
+
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $color-gray-900;
+  }
+}
+
+.add-appointment-close {
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: $color-gray-500;
+  cursor: pointer;
+  padding: $spacing-xs;
+
+  &:hover {
+    color: $color-gray-900;
+  }
+}
+
+.add-appointment-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-md;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.add-appointment-field {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-md;
+
+  input,
+  textarea {
+    @include input-base;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+.add-appointment-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $color-gray-700;
+
+  .required {
+    color: $color-danger;
+  }
+
+  .optional {
+    font-weight: 400;
+    color: $color-gray-400;
+  }
+}
+
+.add-appointment-error {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #b91c1c;
+}
+
+// Selected patient (confirmation with phone)
+.selected-patient {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-md;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid $color-primary-palest;
+  border-radius: $radius-md;
+  background: #eff6ff;
+
+  .selected-patient-name {
+    font-weight: 600;
+    color: $color-gray-900;
+  }
+
+  .selected-patient-phone {
+    margin-top: 0.125rem;
+    font-size: 0.8125rem;
+    color: $color-gray-700;
+  }
+
+  .selected-patient-change {
+    border: none;
+    background: none;
+    color: $color-primary;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// Searchable patient dropdown
+.patient-combobox {
+  position: relative;
+
+  input {
+    @include input-base;
+  }
+}
+
+.patient-combobox-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 14rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: $spacing-xs 0;
+  list-style: none;
+  background: $color-white;
+  border: 1px solid $color-gray-200;
+  border-radius: $radius-md;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  z-index: 10;
+
+  li[role='option'] {
+    display: flex;
+    justify-content: space-between;
+    gap: $spacing-md;
+    padding: $spacing-sm 0.75rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+
+    &.active {
+      background: $color-primary-palest;
+    }
+
+    .option-name {
+      font-weight: 500;
+      color: $color-gray-900;
+    }
+
+    .option-phone {
+      color: $color-gray-500;
+    }
+  }
+
+  .patient-combobox-empty {
+    padding: $spacing-sm 0.75rem;
+    font-size: 0.875rem;
+    color: $color-gray-500;
+  }
+}
+
+.add-appointment-warning {
+  margin-bottom: $spacing-md;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #fde68a;
+  border-radius: $radius-md;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 0.875rem;
+}
+
+.add-appointment-server-error {
+  margin-bottom: $spacing-md;
+  padding: $spacing-sm 0.75rem;
+  border-radius: $radius-md;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.875rem;
+}
+
+.add-appointment-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-sm;
+}
+
+.add-appointment-btn {
+  padding: $spacing-sm $spacing-lg;
+  border-radius: $radius-md;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &.primary {
+    background: linear-gradient(135deg, $color-primary-dark 0%, $color-primary 100%);
+    color: $color-white;
+  }
+
+  &.secondary {
+    background: $color-white;
+    border-color: $color-gray-300;
+    color: $color-gray-700;
+
+    &:hover:not(:disabled) {
+      background: $color-gray-50;
+    }
+  }
+}

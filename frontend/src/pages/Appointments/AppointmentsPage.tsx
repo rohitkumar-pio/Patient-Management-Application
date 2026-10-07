@@ -2,29 +2,21 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import apiClient from '../../lib/api';
+import {
+  appointmentsByDateKey,
+  fetchAppointmentsByDate,
+  formatLongDate,
+  isValidDateString,
+  shiftDate,
+  toDateString,
+} from '../../lib/appointments';
 import { AppointmentCard } from '../../components/AppointmentCard';
+import { AddAppointmentModal } from '../../components/AddAppointmentModal';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { showToast } from '../../components/Toast';
 import { useAuthStore } from '../../stores/authStore';
 import { Appointment, AppointmentStatus } from '../../types';
-import { AddAppointmentModal } from './AddAppointmentModal';
 import './AppointmentsPage.scss';
-
-// Dates are handled as local YYYY-MM-DD strings to match the API's ?date= filter
-const pad = (n: number) => String(n).padStart(2, '0');
-export const toDateString = (date: Date) =>
-  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-const parseDateString = (value: string) => {
-  const [year, month, day] = value.split('-').map(Number);
-  return new Date(year, month - 1, day);
-};
-const isValidDateString = (value: string | null): value is string =>
-  !!value && /^\d{4}-\d{2}-\d{2}$/.test(value) && toDateString(parseDateString(value)) === value;
-const shiftDate = (value: string, days: number) => {
-  const date = parseDateString(value);
-  date.setDate(date.getDate() + days);
-  return toDateString(date);
-};
 
 const STATUS_SUCCESS_MESSAGES: Record<AppointmentStatus, string> = {
   SCHEDULED: 'Appointment set back to scheduled',
@@ -54,7 +46,7 @@ export const AppointmentsPage: React.FC = () => {
   const today = toDateString(new Date());
   const dateParam = searchParams.get('date');
   const selectedDate = isValidDateString(dateParam) ? dateParam : today;
-  const queryKey = ['appointments', selectedDate];
+  const queryKey = appointmentsByDateKey(selectedDate);
 
   const setSelectedDate = (value: string) => {
     if (!isValidDateString(value)) return;
@@ -68,10 +60,7 @@ export const AppointmentsPage: React.FC = () => {
 
   const { data: appointments = [], isLoading, isError, error } = useQuery({
     queryKey,
-    queryFn: async () => {
-      const response = await apiClient.get(`/appointments?date=${selectedDate}`);
-      return response.data.data as Appointment[];
-    },
+    queryFn: () => fetchAppointmentsByDate(selectedDate),
   });
 
   // Optimistic status update so the card changes immediately; rolled back on failure
@@ -132,12 +121,7 @@ export const AppointmentsPage: React.FC = () => {
     { SCHEDULED: 0, COMPLETED: 0, CANCELLED: 0, NO_SHOW: 0 } as Record<AppointmentStatus, number>
   );
 
-  const selectedDateLabel = parseDateString(selectedDate).toLocaleDateString([], {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
+  const selectedDateLabel = formatLongDate(selectedDate);
 
   return (
     <div className="appointments-layout">
@@ -283,7 +267,13 @@ export const AppointmentsPage: React.FC = () => {
         </main>
       </div>
 
-      <AddAppointmentModal isOpen={isAddOpen} date={selectedDate} onClose={() => setIsAddOpen(false)} />
+      <AddAppointmentModal
+        isOpen={isAddOpen}
+        defaultDate={selectedDate}
+        onClose={() => setIsAddOpen(false)}
+        // Show the day the appointment was booked on, so it appears in the list
+        onCreated={setSelectedDate}
+      />
 
       <ConfirmDialog
         isOpen={!!appointmentToDelete}

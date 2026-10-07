@@ -8,3 +8,4 @@ export { VitalsInput } from './VitalsInput';
 export { MedicationList } from './MedicationList';
 export { PrescriptionPreview } from './PrescriptionPreview';
 export { AppointmentCard, StatusBadge } from './AppointmentCard';
+export { AddAppointmentModal } from './AddAppointmentModal';
