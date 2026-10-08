@@ -28,9 +28,18 @@ const App: React.FC = () => {
         <ToastContainer />
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<LoginWrapper />} />
-          
+          <Route path="/login" element={<LoginWrapper />} />
+
           {/* Protected Routes */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          {/* Kept for existing links (login redirect, sidebar, visit form) */}
           <Route
             path="/dashboard"
             element={
@@ -101,7 +110,7 @@ const LoginWrapper: React.FC = () => {
   const { isAuthenticated } = useAuthStore();
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <Login />;

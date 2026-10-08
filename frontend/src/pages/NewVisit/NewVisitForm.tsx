@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../../lib/api';
 import { useAutoSave } from '../../hooks/useAutoSave';
@@ -54,7 +54,11 @@ export const NewVisitForm: React.FC = () => {
   const [showSaveOptions, setShowSaveOptions] = useState(false);
   const [savedPatientId, setSavedPatientId] = useState<string | null>(null);
 
-  const { register, control, handleSubmit, formState: { errors }, watch, reset } = useForm<VisitFormData>({
+  const [searchParams] = useSearchParams();
+  const prefillPatientId = searchParams.get('patientId');
+  const hasPrefilledRef = useRef(false);
+
+  const { register, control, handleSubmit, formState: { errors }, watch, reset, setValue, getValues } = useForm<VisitFormData>({
     resolver: zodResolver(visitFormSchema),
     defaultValues: {
       patientId: '',
@@ -100,6 +104,32 @@ export const NewVisitForm: React.FC = () => {
   });
 
   const selectedPatient = selectedPatientResponse;
+
+  // Patient passed in the URL (e.g. "Start Consultation" from the dashboard queue)
+  const { data: prefillPatient } = useQuery({
+    queryKey: ['patient', prefillPatientId],
+    queryFn: async () => {
+      const response = await apiClient.get(`/patients/${prefillPatientId}`);
+      return response.data.data;
+    },
+    enabled: !!prefillPatientId,
+  });
+
+  // The dropdown only lists the first 100 patients; make sure the pre-filled one is selectable
+  const patientOptions =
+    prefillPatient && !patients.some((p: any) => p.id === prefillPatient.id)
+      ? [...patients, prefillPatient]
+      : patients;
+
+  // Pre-select once options are rendered, without overriding a choice already made (e.g. a resumed draft)
+  useEffect(() => {
+    if (hasPrefilledRef.current || !prefillPatientId || patientsLoading) return;
+    if (!patientOptions.some((p: any) => p.id === prefillPatientId)) return;
+    hasPrefilledRef.current = true;
+    if (!getValues('patientId')) {
+      setValue('patientId', prefillPatientId, { shouldDirty: true });
+    }
+  }, [prefillPatientId, patientsLoading, patientOptions, getValues, setValue]);
 
   // Auto-save functionality
   // Stable key: it must be identical across renders (and before a patient is
@@ -272,8 +302,8 @@ export const NewVisitForm: React.FC = () => {
               disabled={patientsLoading}
             >
               <option value="">{patientsLoading ? 'Loading patients...' : '-- Select a patient --'}</option>
-              {patients && patients.length > 0 ? (
-                patients.map((patient: any) => (
+              {patientOptions && patientOptions.length > 0 ? (
+                patientOptions.map((patient: any) => (
                   <option key={patient.id} value={patient.id}>
                     {patient.name} - {patient.age} years - {patient.phone}
                   </option>

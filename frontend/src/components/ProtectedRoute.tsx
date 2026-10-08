@@ -12,7 +12,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   // Check if user is authenticated
   if (!isAuthenticated || !token) {
     // Redirect to login page if not authenticated
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   // Render children if authenticated

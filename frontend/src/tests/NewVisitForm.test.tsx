@@ -255,6 +255,44 @@ describe('NewVisitForm Component', () => {
     });
   });
 
+  describe('Pre-filled Patient (?patientId=)', () => {
+    afterEach(() => {
+      window.history.pushState({}, '', '/');
+    });
+
+    it('should pre-select the patient from the URL', async () => {
+      window.history.pushState({}, '', '/visits/new?patientId=patient-2');
+      renderWithProviders(<NewVisitForm />);
+
+      await waitFor(() => expect(getPatientSelect()).toHaveValue('patient-2'));
+      expect(
+        await screen.findByText((_, el) => el?.textContent === 'Name: Jane Smith')
+      ).toBeInTheDocument();
+    });
+
+    it('should add the patient as an option when not in the first 100', async () => {
+      const extraPatient = { ...mockPatients[0], id: 'patient-150', name: 'Late Patient', phone: '5555555555' };
+      vi.mocked(apiClient.get).mockImplementation((url: string) =>
+        url === '/patients/patient-150'
+          ? Promise.resolve({ data: { success: true, data: extraPatient } })
+          : mockGetImplementation(url)
+      );
+      window.history.pushState({}, '', '/visits/new?patientId=patient-150');
+      renderWithProviders(<NewVisitForm />);
+
+      await waitFor(() => expect(getPatientSelect()).toHaveValue('patient-150'));
+      expect(within(getPatientSelect()).getByRole('option', { name: /Late Patient/ })).toBeInTheDocument();
+    });
+
+    it('should leave the patient empty for an unknown id', async () => {
+      window.history.pushState({}, '', '/visits/new?patientId=does-not-exist');
+      renderWithProviders(<NewVisitForm />);
+
+      await waitForPatientsLoaded();
+      expect(getPatientSelect()).toHaveValue('');
+    });
+  });
+
   describe('Vitals Validation', () => {
     it('should show error for invalid temperature (too low)', async () => {
       const user = userEvent.setup();

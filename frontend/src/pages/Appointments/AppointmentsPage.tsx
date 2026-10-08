@@ -15,15 +15,9 @@ import { AddAppointmentModal } from '../../components/AddAppointmentModal';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { showToast } from '../../components/Toast';
 import { useAuthStore } from '../../stores/authStore';
+import { useUpdateAppointmentStatus } from '../../hooks/useAppointmentStatus';
 import { Appointment, AppointmentStatus } from '../../types';
 import './AppointmentsPage.scss';
-
-const STATUS_SUCCESS_MESSAGES: Record<AppointmentStatus, string> = {
-  SCHEDULED: 'Appointment set back to scheduled',
-  COMPLETED: 'Appointment marked as completed',
-  CANCELLED: 'Appointment cancelled',
-  NO_SHOW: 'Appointment marked as no-show',
-};
 
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', route: '/dashboard' },
@@ -63,29 +57,8 @@ export const AppointmentsPage: React.FC = () => {
     queryFn: () => fetchAppointmentsByDate(selectedDate),
   });
 
-  // Optimistic status update so the card changes immediately; rolled back on failure
-  const statusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: AppointmentStatus }) =>
-      apiClient.patch(`/appointments/${id}/status`, { status }),
-    onMutate: async ({ id, status }) => {
-      await queryClient.cancelQueries({ queryKey });
-      const previous = queryClient.getQueryData<Appointment[]>(queryKey);
-      queryClient.setQueryData<Appointment[]>(queryKey, (old = []) =>
-        old.map((a) => (a.id === id ? { ...a, status } : a))
-      );
-      return { previous };
-    },
-    onError: (err: any, _vars, context) => {
-      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
-      showToast(err.response?.data?.message || 'Failed to update appointment status', 'error');
-    },
-    onSuccess: (_res, { status }) => {
-      showToast(STATUS_SUCCESS_MESSAGES[status], 'success');
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments'] });
-    },
-  });
+  // Status changes show immediately and roll back on failure
+  const statusMutation = useUpdateAppointmentStatus(queryKey);
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => apiClient.delete(`/appointments/${id}`),

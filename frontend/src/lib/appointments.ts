@@ -46,3 +46,11 @@ export const fetchAppointmentsByDate = async (date: string): Promise<Appointment
   const response = await apiClient.get(`/appointments?date=${date}`);
   return response.data.data as Appointment[];
 };
+
+export const todayAppointmentsKey = ['appointments', 'today'] as const;
+
+/** Today's queue as determined by the server (GET /appointments/today), sorted by time */
+export const fetchTodayAppointments = async (): Promise<Appointment[]> => {
+  const response = await apiClient.get('/appointments/today');
+  return response.data.data as Appointment[];
+};
