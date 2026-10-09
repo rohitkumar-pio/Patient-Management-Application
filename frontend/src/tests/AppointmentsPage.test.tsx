@@ -433,6 +433,49 @@ describe('AppointmentsPage', () => {
     });
   });
 
+  describe('Workflow', () => {
+    it('add -> appears -> complete -> undo -> delete', async () => {
+      const user = userEvent.setup();
+      mockServer([buildAppointments()[1]]); // start with Jane Smith only (completed)
+      renderPage();
+      await screen.findByText('Jane Smith');
+      const summary = () => within(screen.getByLabelText('Status summary'));
+      expect(summary().getByText('1 total')).toBeInTheDocument();
+
+      // Add John Doe at 10:00
+      await user.click(screen.getByRole('button', { name: 'Add Appointment' }));
+      const dialog = within(screen.getByRole('dialog', { name: 'Schedule Appointment' }));
+      await user.type(dialog.getByRole('combobox'), 'John');
+      await user.click(await dialog.findByRole('option', { name: /John Doe/ }));
+      fireEvent.change(dialog.getByLabelText(/^Time/), { target: { value: '10:00' } });
+      await user.click(dialog.getByRole('button', { name: 'Schedule' }));
+
+      // Appears in the list as scheduled, counts update
+      const johnCard = await screen.findByRole('article', { name: 'Appointment for John Doe' });
+      expect(within(johnCard).getByText('Scheduled')).toBeInTheDocument();
+      await waitFor(() => expect(summary().getByText('2 total')).toBeInTheDocument());
+      expect(summary().getByText('1 scheduled')).toBeInTheDocument();
+
+      // Mark complete
+      await user.click(within(getCard('John Doe')).getByRole('button', { name: 'Mark Complete' }));
+      await waitFor(() => expect(summary().getByText('2 completed')).toBeInTheDocument());
+      expect(summary().getByText('0 scheduled')).toBeInTheDocument();
+
+      // Undo
+      await user.click(within(getCard('John Doe')).getByRole('button', { name: 'Undo' }));
+      await waitFor(() => expect(summary().getByText('1 scheduled')).toBeInTheDocument());
+
+      // Delete
+      await user.click(screen.getByRole('button', { name: 'Delete appointment for John Doe' }));
+      await user.click(screen.getByRole('button', { name: 'Delete' }));
+      await waitFor(() =>
+        expect(screen.queryByRole('article', { name: 'Appointment for John Doe' })).not.toBeInTheDocument()
+      );
+      expect(summary().getByText('1 total')).toBeInTheDocument();
+      expect(serverAppointments.map((a) => a.patientId)).toEqual(['patient-2']);
+    });
+  });
+
   describe('Navigation', () => {
     it('opens the patient profile when a card is clicked', async () => {
       const user = userEvent.setup();

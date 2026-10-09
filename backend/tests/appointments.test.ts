@@ -3,6 +3,15 @@ import app from '../src/app';
 import { PrismaClient } from '@prisma/client';
 import { generateToken } from '../src/utils/jwt';
 
+// Run in a timezone where local midnight != UTC midnight, so day-boundary bugs
+// (e.g. parsing YYYY-MM-DD as UTC) fail here even on machines/CI set to UTC.
+const originalTZ = process.env.TZ;
+process.env.TZ = 'Asia/Kolkata';
+afterAll(() => {
+  if (originalTZ === undefined) delete process.env.TZ;
+  else process.env.TZ = originalTZ;
+});
+
 // Mock Prisma Client
 jest.mock('@prisma/client', () => {
   const mockPrismaClient = {
@@ -292,5 +301,222 @@ describe('Appointment API', () => {
 
       expect(prisma.appointment.delete).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('Appointment API - validation gaps', () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('should list every missing required field on create', async () => {
+    const response = await request(app)
+      .post('/api/appointments')
+      .set('Authorization', `Bearer ${mockToken}`)
+      .send({})
+      .expect(400);
+
+    const fields = response.body.errors.map((e: { field: string }) => e.field);
+    expect(fields).toEqual(expect.arrayContaining(['patientId', 'appointmentDate']));
+    expect(prisma.patient.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('should reject notes longer than 1000 characters', async () => {
+    const response = await request(app)
+      .post('/api/appointments')
+      .set('Authorization', `Bearer ${mockToken}`)
+      .send({ patientId: mockPatientId, appointmentDate: '2026-10-01T09:30:00.000Z', notes: 'a'.repeat(1001) })
+      .expect(400);
+
+    expect(response.body.errors[0].field).toBe('notes');
+  });
+
+  it('should reject a status update without a status', async () => {
+    await request(app)
+      .patch(`/api/appointments/${mockAppointmentId}/status`)
+      .set('Authorization', `Bearer ${mockToken}`)
+      .send({})
+      .expect(400);
+
+    expect(prisma.appointment.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('should accept a leap day and reject a non-leap Feb 29', async () => {
+    (prisma.appointment.findMany as jest.Mock).mockResolvedValue([]);
+
+    await request(app)
+      .get('/api/appointments?date=2028-02-29')
+      .set('Authorization', `Bearer ${mockToken}`)
+      .expect(200);
+    await request(app)
+      .get('/api/appointments?date=2027-02-29')
+      .set('Authorization', `Bearer ${mockToken}`)
+      .expect(400);
+  });
+
+  it('should return 500 when the database fails', async () => {
+    (prisma.appointment.findMany as jest.Mock).mockRejectedValue(new Error('connection lost'));
+
+    const response = await request(app)
+      .get('/api/appointments/today')
+      .set('Authorization', `Bearer ${mockToken}`)
+      .expect(500);
+
+    expect(response.body.success).toBe(false);
+  });
+});
+
+/**
+ * Workflow tests against an in-memory store that applies the same date-range
+ * filter and ordering the database would, so they exercise how the controller's
+ * queries behave end to end: create -> list by date -> today's queue -> status -> delete.
+ */
+describe('Appointment API - workflow', () => {
+  type StoredAppointment = {
+    id: string;
+    patientId: string;
+    appointmentDate: Date;
+    status: string;
+    notes: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+
+  let store: StoredAppointment[];
+  let nextId: number;
+
+  const withPatient = (a: StoredAppointment) => ({ ...a, patient: mockPatient });
+  const inRange = (date: Date, range?: { gte: Date; lt: Date }) =>
+    !range || (date >= range.gte && date < range.lt);
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+    store = [];
+    nextId = 1;
+
+    (prisma.patient.findUnique as jest.Mock).mockImplementation(async ({ where }) =>
+      where.id === mockPatientId ? mockPatient : null
+    );
+    (prisma.appointment.create as jest.Mock).mockImplementation(async ({ data }) => {
+      const created: StoredAppointment = {
+        id: `750e8400-e29b-41d4-a716-${String(nextId++).padStart(12, '0')}`,
+        patientId: data.patientId,
+        appointmentDate: data.appointmentDate,
+        status: data.status,
+        notes: data.notes ?? null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      store.push(created);
+      return withPatient(created);
+    });
+    (prisma.appointment.findMany as jest.Mock).mockImplementation(async ({ where }) =>
+      store
+        .filter((a) => inRange(a.appointmentDate, where?.appointmentDate))
+        .sort((a, b) => a.appointmentDate.getTime() - b.appointmentDate.getTime())
+        .map(withPatient)
+    );
+    (prisma.appointment.findUnique as jest.Mock).mockImplementation(async ({ where }) => {
+      const found = store.find((a) => a.id === where.id);
+      return found ? withPatient(found) : null;
+    });
+    (prisma.appointment.update as jest.Mock).mockImplementation(async ({ where, data }) => {
+      const found = store.find((a) => a.id === where.id)!;
+      Object.assign(found, data, { updatedAt: new Date() });
+      return withPatient(found);
+    });
+    (prisma.appointment.delete as jest.Mock).mockImplementation(async ({ where }) => {
+      const found = store.find((a) => a.id === where.id)!;
+      store = store.filter((a) => a.id !== where.id);
+      return found;
+    });
+  });
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const ymd = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const localDate = (dayOffset: number, hours: number, minutes = 0) => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset, hours, minutes);
+  };
+
+  const create = async (appointmentDate: Date) => {
+    const response = await request(app)
+      .post('/api/appointments')
+      .set('Authorization', `Bearer ${mockToken}`)
+      .send({ patientId: mockPatientId, appointmentDate: appointmentDate.toISOString() })
+      .expect(201);
+    return response.body.data.id as string;
+  };
+  const getIds = async (path: string) => {
+    const response = await request(app).get(path).set('Authorization', `Bearer ${mockToken}`).expect(200);
+    return response.body.data.map((a: { id: string }) => a.id) as string[];
+  };
+
+  it('should put early-morning appointments on the right local day in both the queue and the date filter', async () => {
+    // 00:30 local (IST) is 19:00 UTC the previous day: a UTC-midnight boundary would drop it
+    const early = await create(localDate(0, 0, 30));
+    const late = await create(localDate(0, 23, 45));
+    const tomorrow = await create(localDate(1, 0, 15));
+    const yesterday = await create(localDate(-1, 23, 59));
+
+    const todayQueue = await getIds('/api/appointments/today');
+    const byDate = await getIds(`/api/appointments?date=${ymd(new Date())}`);
+
+    expect(todayQueue).toEqual([early, late]);
+    expect(byDate).toEqual(todayQueue);
+    expect(await getIds(`/api/appointments?date=${ymd(localDate(1, 0))}`)).toEqual([tomorrow]);
+    expect(await getIds(`/api/appointments?date=${ymd(localDate(-1, 0))}`)).toEqual([yesterday]);
+  });
+
+  it('should filter across month and year boundaries', async () => {
+    const eveId = await create(new Date(2026, 11, 31, 23, 30));
+    const dayId = await create(new Date(2027, 0, 1, 0, 30));
+
+    expect(await getIds('/api/appointments?date=2026-12-31')).toEqual([eveId]);
+    expect(await getIds('/api/appointments?date=2027-01-01')).toEqual([dayId]);
+  });
+
+  it('should run the full create -> status -> delete workflow', async () => {
+    const morning = await create(localDate(0, 9, 0));
+    const afternoon = await create(localDate(0, 14, 0));
+
+    // Both start in the scheduled queue, in time order
+    let response = await request(app).get('/api/appointments/today').set('Authorization', `Bearer ${mockToken}`);
+    expect(response.body.data.map((a: any) => a.status)).toEqual(['SCHEDULED', 'SCHEDULED']);
+    expect(response.body.grouped.scheduled.map((a: any) => a.id)).toEqual([morning, afternoon]);
+
+    // Status updates persist and regroup the queue
+    await request(app)
+      .patch(`/api/appointments/${morning}/status`)
+      .set('Authorization', `Bearer ${mockToken}`)
+      .send({ status: 'COMPLETED' })
+      .expect(200);
+    await request(app)
+      .patch(`/api/appointments/${afternoon}/status`)
+      .set('Authorization', `Bearer ${mockToken}`)
+      .send({ status: 'NO_SHOW' })
+      .expect(200);
+
+    response = await request(app).get(`/api/appointments/${morning}`).set('Authorization', `Bearer ${mockToken}`);
+    expect(response.body.data.status).toBe('COMPLETED');
+
+    response = await request(app).get('/api/appointments/today').set('Authorization', `Bearer ${mockToken}`);
+    expect(response.body.grouped.scheduled).toHaveLength(0);
+    expect(response.body.grouped.completed.map((a: any) => a.id)).toEqual([morning]);
+    expect(response.body.grouped.noShow.map((a: any) => a.id)).toEqual([afternoon]);
+
+    // Undo puts it back in the scheduled group
+    await request(app)
+      .patch(`/api/appointments/${afternoon}/status`)
+      .set('Authorization', `Bearer ${mockToken}`)
+      .send({ status: 'SCHEDULED' })
+      .expect(200);
+    response = await request(app).get('/api/appointments/today').set('Authorization', `Bearer ${mockToken}`);
+    expect(response.body.grouped.scheduled.map((a: any) => a.id)).toEqual([afternoon]);
+
+    // Delete removes it from every view
+    await request(app).delete(`/api/appointments/${morning}`).set('Authorization', `Bearer ${mockToken}`).expect(200);
+    expect(await getIds('/api/appointments/today')).toEqual([afternoon]);
+    await request(app).get(`/api/appointments/${morning}`).set('Authorization', `Bearer ${mockToken}`).expect(404);
   });
 });
