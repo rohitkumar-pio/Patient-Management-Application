@@ -207,3 +207,106 @@ describe('Patient history API', () => {
     });
   });
 });
+
+/**
+ * Workflow tests over an in-memory store that applies the same filter, order and
+ * paging the database would, so they check what the endpoint actually returns
+ * for a realistic history (60+ visits), not just the query it builds.
+ */
+describe('Patient history API - workflow (in-memory store)', () => {
+  type StoredVisit = ReturnType<typeof buildVisit> & { visitDate: Date };
+  let store: StoredVisit[];
+
+  // 60 visits in range (every 14 days from 2024-01-02, at varying local hours),
+  // plus 5 outside it, plus 2 sharing one timestamp to exercise the id tie-break
+  const seed = () => {
+    const visits: StoredVisit[] = [];
+    for (let i = 0; i < 60; i++) {
+      visits.push({ ...buildVisit(i), id: `in-${String(i).padStart(2, '0')}`, visitDate: new Date(2024, 0, 2 + i * 14, 9 + (i % 8), 15) });
+    }
+    const outside = [new Date(2023, 11, 31, 23, 59), new Date(2023, 5, 1, 10), new Date(2026, 4, 8, 0, 5), new Date(2026, 5, 1, 10), new Date(2026, 8, 1, 10)];
+    outside.forEach((visitDate, i) => visits.push({ ...buildVisit(100 + i), id: `out-${i}`, visitDate }));
+    const sameTime = new Date(2025, 5, 15, 12, 0);
+    visits.push({ ...buildVisit(200), id: 'tie-a', visitDate: sameTime }, { ...buildVisit(201), id: 'tie-b', visitDate: sameTime });
+    return visits;
+  };
+
+  const matches = (v: StoredVisit, where: any) =>
+    (!where.patientId || v.patientId === where.patientId) &&
+    (!where.visitDate?.gte || v.visitDate >= where.visitDate.gte) &&
+    (!where.visitDate?.lt || v.visitDate < where.visitDate.lt);
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+    store = seed();
+    (prisma.patient.findUnique as jest.Mock).mockImplementation(async ({ where }) =>
+      where.id === patientId ? { id: patientId } : null
+    );
+    (prisma.visit.findMany as jest.Mock).mockImplementation(async ({ where, orderBy, skip, take }) => {
+      expect(orderBy).toEqual([{ visitDate: 'desc' }, { id: 'desc' }]);
+      return store
+        .filter((v) => matches(v, where))
+        .sort((a, b) => b.visitDate.getTime() - a.visitDate.getTime() || (a.id < b.id ? 1 : -1))
+        .slice(skip, skip + take);
+    });
+    (prisma.visit.count as jest.Mock).mockImplementation(async ({ where }) => store.filter((v) => matches(v, where)).length);
+  });
+
+  const range = 'startDate=2024-01-01&endDate=2026-05-07';
+
+  it('returns 50+ visits for the range within 2 seconds', async () => {
+    const started = Date.now();
+    const response = await get(`/api/patients/${patientId}/visits?${range}&limit=100`).expect(200);
+    const elapsed = Date.now() - started;
+
+    // 60 regular in-range visits + the 2 same-timestamp ones (2025-06-15)
+    expect(response.body.pagination.total).toBe(62);
+    expect(response.body.data).toHaveLength(62);
+    expect(response.body.data.every((v: any) => v.medications.length > 0)).toBe(true);
+    // Covers the HTTP stack, validation and formatting; the dev-database timing is in history.db.test.ts
+    expect(elapsed).toBeLessThan(2000);
+  });
+
+  it('applies inclusive local calendar-day bounds', async () => {
+    let response = await get(`/api/patients/${patientId}/visits?${range}&limit=100`).expect(200);
+    const ids = response.body.data.map((v: any) => v.id);
+    expect(ids.some((id: string) => id.startsWith('out-'))).toBe(false);
+
+    // 2023-12-31 23:59 local is excluded by startDate=2024-01-01; 2026-05-08 00:05 by endDate=2026-05-07
+    response = await get(`/api/patients/${patientId}/visits?startDate=2023-12-31&endDate=2023-12-31`).expect(200);
+    expect(response.body.data.map((v: any) => v.id)).toEqual(['out-0']);
+    response = await get(`/api/patients/${patientId}/visits?startDate=2026-05-08&endDate=2026-05-08`).expect(200);
+    expect(response.body.data.map((v: any) => v.id)).toEqual(['out-2']);
+  });
+
+  it('returns newest first', async () => {
+    const response = await get(`/api/patients/${patientId}/visits?${range}&limit=100`).expect(200);
+    const times = response.body.data.map((v: any) => new Date(v.visitDate).getTime());
+    expect(times).toEqual([...times].sort((a, b) => b - a));
+  });
+
+  it('pages through every visit exactly once, including same-timestamp visits', async () => {
+    const seen: string[] = [];
+    let offset = 0;
+    let pages = 0;
+    for (;;) {
+      const response = await get(`/api/patients/${patientId}/visits?${range}&limit=20&offset=${offset}`).expect(200);
+      pages += 1;
+      seen.push(...response.body.data.map((v: any) => v.id));
+      expect(response.body.pagination).toMatchObject({ total: 62, limit: 20, offset });
+      if (!response.body.pagination.hasMore) break;
+      offset += response.body.data.length;
+    }
+
+    expect(pages).toBe(4); // 20 + 20 + 20 + 2
+    expect(seen).toHaveLength(62);
+    expect(new Set(seen).size).toBe(62);
+    expect(seen.indexOf('tie-b')).toBe(seen.indexOf('tie-a') - 1); // id desc breaks the tie
+  });
+
+  it('returns an empty page past the end', async () => {
+    const response = await get(`/api/patients/${patientId}/visits?${range}&offset=500`).expect(200);
+    expect(response.body.data).toEqual([]);
+    expect(response.body.pagination).toMatchObject({ total: 62, hasMore: false });
+  });
+});
