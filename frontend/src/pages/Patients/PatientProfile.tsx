@@ -324,7 +324,12 @@ export const PatientProfile: React.FC = () => {
 
               {activeTab === 'visits' && (
                 <div className="tab-panel">
-                  <h3>Visit History</h3>
+                  <div className="tab-panel-header">
+                    <h3>Recent Visits</h3>
+                    <button onClick={() => navigate(`/patients/${id}/history`)} className="btn-secondary">
+                      View Full History
+                    </button>
+                  </div>
                   {visitsLoading ? (
                     <div className="loading-state">
                       <p>Loading visits...</p>

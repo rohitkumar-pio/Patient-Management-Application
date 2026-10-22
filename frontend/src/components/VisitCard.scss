@@ -1,0 +1,185 @@
+// VisitCard SCSS - compact, fixed-height card for the history timeline
+
+$color-primary: #1e40af;
+$color-primary-palest: #dbeafe;
+$color-white: #ffffff;
+$color-gray-100: #f3f4f6;
+$color-gray-200: #e5e7eb;
+$color-gray-400: #9ca3af;
+$color-gray-500: #6b7280;
+$color-gray-700: #374151;
+$color-gray-900: #111827;
+
+// Must match VISIT_CARD_HEIGHT minus the row gap (see PatientHistory.scss)
+$card-height: 152px;
+
+// Vital status colors (same meaning as the new visit form)
+$vital-colors: (
+  'normal': (#ecfdf5, #065f46, #a7f3d0),
+  'warning': (#fffbeb, #92400e, #fde68a),
+  'danger': (#fef2f2, #991b1b, #fecaca),
+  'unknown': (#f9fafb, #6b7280, #e5e7eb),
+);
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.vital-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+
+  .vital-chip-label {
+    font-weight: 500;
+    opacity: 0.8;
+  }
+
+  .vital-chip-value {
+    font-weight: 700;
+  }
+
+  @each $name, $colors in $vital-colors {
+    &.#{$name} {
+      background: nth($colors, 1);
+      color: nth($colors, 2);
+      border-color: nth($colors, 3);
+    }
+  }
+}
+
+.visit-card-compact {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr) auto;
+  gap: 1rem;
+  height: $card-height;
+  padding: 0.875rem 1rem;
+  overflow: hidden;
+  background: $color-white;
+  border: 1px solid $color-gray-200;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  // Narrow screens: footer moves under the body as one row (still fits the fixed height)
+  @media (max-width: 640px) {
+    grid-template-columns: 4.25rem minmax(0, 1fr);
+    grid-template-areas:
+      'date body'
+      'date footer';
+    gap: 0.375rem 0.75rem;
+
+    .visit-card-date { grid-area: date; }
+    .visit-card-body { grid-area: body; }
+
+    .visit-card-footer {
+      grid-area: footer;
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .visit-card-line {
+      font-size: 0.8125rem;
+    }
+  }
+}
+
+.visit-card-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: $color-primary-palest;
+  color: $color-primary;
+  text-align: center;
+
+  .visit-card-day {
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .visit-card-month {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .visit-card-time {
+    margin-top: 0.25rem;
+    font-size: 0.6875rem;
+    color: $color-gray-500;
+  }
+}
+
+.visit-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.visit-card-vitals {
+  display: flex;
+  gap: 0.375rem;
+  overflow: hidden;
+}
+
+.visit-card-line {
+  margin: 0;
+  font-size: 0.875rem;
+  color: $color-gray-700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  .visit-card-line-label {
+    font-weight: 600;
+    color: $color-gray-900;
+  }
+}
+
+.visit-card-muted {
+  color: $color-gray-400;
+  font-style: italic;
+}
+
+.visit-card-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  .visit-card-meds {
+    font-size: 0.8125rem;
+    color: $color-gray-700;
+    white-space: nowrap;
+  }
+}
+
+.visit-card-details-btn {
+  padding: 0.4375rem 0.875rem;
+  border: 1px solid $color-primary;
+  border-radius: 0.5rem;
+  background: $color-white;
+  color: $color-primary;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    background: $color-primary-palest;
+  }
+}

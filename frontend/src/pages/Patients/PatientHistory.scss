@@ -1,0 +1,245 @@
+// PatientHistory SCSS (layout shell comes from PatientProfile.scss)
+
+$color-primary: #1e40af;
+$color-primary-dark: #1e3a8a;
+$color-primary-light: #3b82f6;
+$color-primary-palest: #dbeafe;
+$color-white: #ffffff;
+$color-gray-100: #f3f4f6;
+$color-gray-200: #e5e7eb;
+$color-gray-300: #d1d5db;
+$color-gray-500: #6b7280;
+$color-gray-700: #374151;
+$color-gray-900: #111827;
+
+// Row = card (152px) + gap; must match VISIT_CARD_HEIGHT (164)
+$row-gap: 12px;
+$timeline-gutter: 1.75rem;
+
+.history-container {
+  max-width: 60rem;
+}
+
+.history-patient-card {
+  margin-bottom: 1.25rem;
+}
+
+.history-patient {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.5rem;
+    color: $color-gray-900;
+  }
+
+  .patient-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: $color-gray-700;
+  }
+}
+
+.history-new-visit {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, $color-primary-dark 0%, $color-primary 100%);
+  color: $color-white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+// Filters
+.history-filters {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.history-date-inputs {
+  display: flex;
+  gap: 0.75rem;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: $color-gray-700;
+  }
+
+  input {
+    height: 2.25rem;
+    padding: 0 0.625rem;
+    border: 1px solid $color-gray-300;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: $color-gray-900;
+    background: $color-white;
+
+    &:focus {
+      outline: none;
+      border-color: $color-primary-light;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+  }
+}
+
+.history-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.history-preset {
+  height: 2.25rem;
+  padding: 0 0.875rem;
+  border: 1px solid $color-gray-300;
+  border-radius: 999px;
+  background: $color-white;
+  color: $color-gray-700;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    border-color: $color-primary-light;
+    color: $color-primary;
+  }
+
+  &.active {
+    border-color: $color-primary;
+    background: $color-primary-palest;
+    color: $color-primary;
+  }
+}
+
+.history-range-error,
+.history-error {
+  margin: 0 0 1rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.5rem;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.875rem;
+}
+
+// Timeline
+.history-timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-virtual-list {
+  // Scrolls on its own; only visible rows are in the DOM
+  height: min(70vh, 48rem);
+}
+
+.history-row {
+  position: relative;
+  box-sizing: border-box;
+  padding: 0 0 $row-gap $timeline-gutter;
+
+  // Vertical line segment (each row draws its own, so virtualized rows connect)
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0.5rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: $color-gray-200;
+  }
+
+  // Dot aligned with the card's date block
+  &::after {
+    content: '';
+    position: absolute;
+    left: calc(0.5rem - 5px);
+    top: 1.5rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: $color-white;
+    border: 2px solid $color-primary;
+  }
+}
+
+.history-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  padding-left: $timeline-gutter;
+}
+
+.history-count {
+  font-size: 0.875rem;
+  color: $color-gray-500;
+}
+
+.history-load-more,
+.history-link-btn {
+  padding: 0.5rem 1.25rem;
+  border: 1px solid $color-primary;
+  border-radius: 0.5rem;
+  background: $color-white;
+  color: $color-primary;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: $color-primary-palest;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.history-empty {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background: $color-white;
+  border: 1px dashed $color-gray-300;
+  border-radius: 0.75rem;
+
+  h3 {
+    margin: 0 0 1rem;
+    color: $color-gray-900;
+  }
+}
+
+.history-loading {
+  display: flex;
+  flex-direction: column;
+  gap: $row-gap;
+  padding-left: $timeline-gutter;
+
+  .history-skeleton {
+    height: 152px;
+    border-radius: 0.75rem;
+    background: linear-gradient(90deg, $color-gray-100 25%, $color-gray-200 50%, $color-gray-100 75%);
+    background-size: 200% 100%;
+    animation: history-shimmer 1.5s infinite;
+  }
+}
+
+@keyframes history-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

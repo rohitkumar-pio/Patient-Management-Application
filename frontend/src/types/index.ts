@@ -41,6 +41,18 @@ export interface Visit {
   patient?: Patient;
 }
 
+// GET /api/patients/:id/visits
+export interface VisitHistoryResponse {
+  success: true;
+  data: Visit[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+  };
+}
+
 // Appointment types
 export type AppointmentStatus = 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
 

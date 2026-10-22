@@ -10,3 +10,5 @@ export { PrescriptionPreview } from './PrescriptionPreview';
 export { AppointmentCard, StatusBadge } from './AppointmentCard';
 export { AddAppointmentModal } from './AddAppointmentModal';
 export { DailyQueue } from './DailyQueue';
+export { VisitCard } from './VisitCard';
+export { VisitDetailModal } from './VisitDetailModal';

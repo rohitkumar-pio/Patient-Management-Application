@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../../lib/api';
 import { useAutoSave } from '../../hooks/useAutoSave';
+import { getVitalStatus } from '../../lib/vitals';
 import { showToast } from '../../components/Toast';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { PrescriptionPreview } from '../../components/PrescriptionPreview';
@@ -186,38 +187,6 @@ export const NewVisitForm: React.FC = () => {
   const handleDiscardDraft = () => {
     clearDraft();
     setShowDraftDialog(false);
-  };
-
-  const getVitalStatus = (type: 'temperature' | 'pulse' | 'bp', value: string) => {
-    if (!value) return '';
-
-    if (type === 'temperature') {
-      const temp = parseFloat(value);
-      if (isNaN(temp)) return '';
-      if (temp >= 36.1 && temp <= 37.2) return 'normal';
-      if (temp >= 35 && temp < 36.1 || temp > 37.2 && temp <= 38) return 'warning';
-      return 'danger';
-    }
-
-    if (type === 'pulse') {
-      const pulseVal = parseInt(value, 10);
-      if (isNaN(pulseVal)) return '';
-      if (pulseVal >= 60 && pulseVal <= 100) return 'normal';
-      if (pulseVal >= 50 && pulseVal < 60 || pulseVal > 100 && pulseVal <= 120) return 'warning';
-      return 'danger';
-    }
-
-    if (type === 'bp') {
-      const match = value.match(/^(\d{2,3})\/(\d{2,3})$/);
-      if (!match) return '';
-      const systolic = parseInt(match[1], 10);
-      const diastolic = parseInt(match[2], 10);
-      if (systolic >= 90 && systolic <= 120 && diastolic >= 60 && diastolic <= 80) return 'normal';
-      if (systolic >= 120 && systolic <= 140 || diastolic >= 80 && diastolic <= 90) return 'warning';
-      return 'danger';
-    }
-
-    return '';
   };
 
   const onSubmit = async (data: VisitFormData, printPrescription: boolean = false) => {

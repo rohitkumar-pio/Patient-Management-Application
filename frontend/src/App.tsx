@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Login from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import PatientList from './pages/PatientList';
-import { NewPatient, EditPatient, PatientProfile, AppointmentsPage } from './pages';
+import { NewPatient, EditPatient, PatientProfile, PatientHistory, AppointmentsPage } from './pages';
 import { NewVisitForm } from './pages/NewVisit/NewVisitForm';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ToastContainer } from './components';
@@ -69,6 +69,14 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <EditPatient />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/patients/:id/history"
+            element={
+              <ProtectedRoute>
+                <PatientHistory />
               </ProtectedRoute>
             }
           />

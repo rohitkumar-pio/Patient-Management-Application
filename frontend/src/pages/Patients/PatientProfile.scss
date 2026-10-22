@@ -352,6 +352,18 @@
 }
 
 .tab-panel {
+  .tab-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    h3 {
+      margin: 0;
+    }
+  }
+
   h3 {
     margin: 0 0 1rem 0;
     font-size: 1.25rem;
