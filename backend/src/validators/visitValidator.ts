@@ -82,16 +82,66 @@ export const updateVisitSchema = z.object({
     .optional(),
 });
 
-// Query parameters schema for fetching visits
-export const visitQuerySchema = z.object({
-  patientId: z.string().uuid().optional(),
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
-  page: z.string().regex(/^\d+$/).transform(Number).optional(),
-  limit: z.string().regex(/^\d+$/).transform(Number).optional(),
-});
+/**
+ * Parse a history date bound. YYYY-MM-DD is a local calendar day (like the
+ * appointment filters); a full ISO datetime is used as-is.
+ * For an end bound, a calendar day includes the whole day.
+ */
+const parseHistoryDate = (value: string, bound: 'start' | 'end'): Date | null => {
+  const dayMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (dayMatch) {
+    const [year, month, day] = dayMatch.slice(1).map(Number);
+    const date = new Date(year, month - 1, day);
+    if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+      return null;
+    }
+    // Exclusive upper bound: start of the following day
+    return bound === 'end' ? new Date(year, month - 1, day + 1) : date;
+  }
+  if (z.string().datetime({ offset: true }).safeParse(value).success) {
+    const date = new Date(value);
+    // Exclusive upper bound just after the given instant
+    return bound === 'end' ? new Date(date.getTime() + 1) : date;
+  }
+  return null;
+};
+
+const historyDateSchema = (bound: 'start' | 'end') =>
+  z.string().transform((value, ctx) => {
+    const date = parseHistoryDate(value, bound);
+    if (!date) {
+      ctx.addIssue({ code: 'custom', message: 'Date must be YYYY-MM-DD or an ISO 8601 datetime' });
+      return z.NEVER;
+    }
+    return date;
+  });
+
+const integerParam = (name: string, min: number, max: number) =>
+  z
+    .string()
+    .regex(/^\d+$/, `${name} must be a whole number`)
+    .transform(Number)
+    .refine((n) => n >= min && n <= max, `${name} must be between ${min} and ${max}`);
+
+export const HISTORY_DEFAULT_LIMIT = 20;
+export const HISTORY_MAX_LIMIT = 100;
+
+// Query parameters for patient visit history
+export const visitHistoryQuerySchema = z
+  .object({
+    patientId: z.string().uuid('Invalid patient ID format').optional(),
+    startDate: historyDateSchema('start').optional(),
+    // Exclusive upper bound (see parseHistoryDate)
+    endDate: historyDateSchema('end').optional(),
+    limit: integerParam('limit', 1, HISTORY_MAX_LIMIT).default(HISTORY_DEFAULT_LIMIT),
+    offset: integerParam('offset', 0, Number.MAX_SAFE_INTEGER).default(0),
+  })
+  .refine((q) => !q.startDate || !q.endDate || q.startDate < q.endDate, {
+    message: 'startDate must be on or before endDate',
+    path: ['endDate'],
+  });
 
 export type CreateVisitInput = z.infer<typeof createVisitSchema>;
 export type UpdateVisitInput = z.infer<typeof updateVisitSchema>;
-export type VisitQueryInput = z.infer<typeof visitQuerySchema>;
+export type VisitHistoryQuery = z.infer<typeof visitHistoryQuerySchema>;
 export type MedicationInput = z.infer<typeof medicationSchema>;

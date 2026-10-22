@@ -60,7 +60,8 @@ model Visit {
   patient     Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
   medications Medication[]
 
-  @@index([patientId])
+  // Serves history: filter by patient + date range, ordered by visitDate (also covers patientId-only lookups)
+  @@index([patientId, visitDate])
   @@index([visitDate])
   @@map("visits")
 }

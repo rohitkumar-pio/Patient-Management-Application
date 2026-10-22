@@ -4,6 +4,7 @@ import * as visitService from '../services/visitService';
 import {
   createVisitSchema,
   updateVisitSchema,
+  visitHistoryQuerySchema,
 } from '../validators/visitValidator';
 
 /**
@@ -92,6 +93,59 @@ export const getVisitsByPatient = async (req: Request, res: Response): Promise<v
     res.status(500).json({
       success: false,
       message: 'Failed to fetch patient visits',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @route   GET /api/patients/:id/visits
+ * @route   GET /api/visits?patientId=
+ * @desc    Visit history, newest first, with medications
+ * @query   startDate, endDate (YYYY-MM-DD or ISO datetime; endDate inclusive),
+ *          limit (default 20, max 100), offset (default 0)
+ * @access  Private
+ */
+export const getPatientHistory = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const query = visitHistoryQuerySchema.parse({
+      ...req.query,
+      // Path param (/patients/:id/visits) takes precedence over ?patientId=
+      ...(req.params.id && { patientId: req.params.id }),
+    });
+
+    const result = await visitService.getPatientHistory(query);
+
+    res.status(200).json({
+      success: true,
+      data: result.visits.map(visitService.formatVisitData),
+      pagination: result.pagination,
+    });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid query parameters',
+        errors: error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        })),
+      });
+      return;
+    }
+
+    if (error instanceof visitService.PatientNotFoundError) {
+      res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+      return;
+    }
+
+    console.error('Error fetching visit history:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch visit history',
       error: error.message,
     });
   }

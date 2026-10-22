@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { prisma } from '../config/database';
 import { CreateVisitInput, UpdateVisitInput } from '../validators/visitValidator';
 
@@ -103,6 +104,70 @@ export const getVisitsByPatient = async (patientId: string, page = 1, limit = 20
       page,
       limit,
       totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
+export class PatientNotFoundError extends Error {
+  constructor() {
+    super('Patient not found');
+  }
+}
+
+interface PatientHistoryParams {
+  patientId?: string;
+  startDate?: Date;
+  /** Exclusive upper bound */
+  endDate?: Date;
+  limit: number;
+  offset: number;
+}
+
+/**
+ * Visit history, newest first, with medications.
+ * The (patientId, visitDate) index serves both the filter and the sort, so the
+ * page is read in index order instead of sorting all of a patient's visits.
+ */
+export const getPatientHistory = async ({ patientId, startDate, endDate, limit, offset }: PatientHistoryParams) => {
+  const where: Prisma.VisitWhereInput = {
+    ...(patientId && { patientId }),
+    ...((startDate || endDate) && {
+      visitDate: {
+        ...(startDate && { gte: startDate }),
+        ...(endDate && { lt: endDate }),
+      },
+    }),
+  };
+
+  const [patient, visits, total] = await Promise.all([
+    patientId ? prisma.patient.findUnique({ where: { id: patientId }, select: { id: true } }) : null,
+    prisma.visit.findMany({
+      where,
+      include: {
+        medications: { orderBy: { createdAt: 'asc' } },
+        patient: {
+          select: { id: true, name: true, age: true, gender: true, phone: true },
+        },
+      },
+      // id breaks ties so pages never overlap or skip visits with the same timestamp
+      orderBy: [{ visitDate: 'desc' }, { id: 'desc' }],
+      skip: offset,
+      take: limit,
+    }),
+    prisma.visit.count({ where }),
+  ]);
+
+  if (patientId && !patient) {
+    throw new PatientNotFoundError();
+  }
+
+  return {
+    visits,
+    pagination: {
+      total,
+      limit,
+      offset,
+      hasMore: offset + visits.length < total,
     },
   };
 };
@@ -246,6 +311,11 @@ export const formatVisitData = (visit: any) => {
     } : undefined,
     complaints: visit.complaints,
     diagnosis: visit.diagnosis,
+    // Flat vitals are what the frontend reads (Visit type, profile, prescription preview);
+    // `vitals` is kept for existing API consumers.
+    temperature: visit.temperature,
+    bloodPressure: visit.bloodPressure,
+    pulse: visit.pulse,
     vitals: {
       temperature: visit.temperature,
       bloodPressure: visit.bloodPressure,

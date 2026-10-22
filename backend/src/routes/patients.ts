@@ -7,6 +7,7 @@ import {
   deletePatient,
   searchPatients,
 } from '../controllers/patientController';
+import { getPatientHistory } from '../controllers/visitController';
 import { authenticate } from '../middleware/auth';
 
 const router: Router = Router();
@@ -42,6 +43,14 @@ router.get('/', authenticate, getPatients);
  * @param   id - Patient UUID
  */
 router.get('/:id', authenticate, getPatientById);
+
+/**
+ * @route   GET /api/patients/:id/visits
+ * @desc    Patient visit history, newest first, with medications
+ * @access  Protected
+ * @query   startDate, endDate (YYYY-MM-DD or ISO datetime), limit (default 20, max 100), offset
+ */
+router.get('/:id/visits', authenticate, getPatientHistory);
 
 /**
  * @route   PUT /api/patients/:id

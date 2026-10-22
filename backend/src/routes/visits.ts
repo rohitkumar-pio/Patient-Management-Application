@@ -15,14 +15,22 @@ router.use(authenticate);
 router.post('/', visitController.createVisit);
 
 /**
- * @route   GET /api/patients/:patientId/visits
- * @desc    Get all visits for a specific patient
+ * @route   GET /api/visits
+ * @desc    Visit history with filters, newest first, with medications
+ * @query   patientId, startDate, endDate, limit (default 20, max 100), offset
+ * @access  Private
+ */
+router.get('/', visitController.getPatientHistory);
+
+/**
+ * @route   GET /api/visits/patient/:patientId
+ * @desc    Get all visits for a specific patient (page-based; see GET /api/patients/:id/visits)
  * @access  Private
  */
 router.get('/patient/:patientId', visitController.getVisitsByPatient);
 
 /**
- * @route   GET /api/patients/:patientId/visits/summary
+ * @route   GET /api/visits/patient/:patientId/summary
  * @desc    Get visit summary statistics for a patient
  * @access  Private
  */
