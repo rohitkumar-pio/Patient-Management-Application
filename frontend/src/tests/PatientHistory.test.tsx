@@ -390,6 +390,54 @@ describe('PatientHistory', () => {
     });
   });
 
+  describe('Chart view', () => {
+    it('switches to the chart and back, keeping the view in the URL', async () => {
+      const user = userEvent.setup();
+      renderHistory();
+      await waitFor(() => expect(cards()).toHaveLength(3));
+      expect(screen.getByRole('button', { name: 'Timeline' })).toHaveAttribute('aria-pressed', 'true');
+
+      await user.click(screen.getByRole('button', { name: 'Chart' }));
+
+      expect(await screen.findByText('3 visits plotted')).toBeInTheDocument();
+      // The chart is lazy-loaded
+      expect(await screen.findByRole('heading', { level: 4, name: /Temperature/ })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Chart' })).toHaveAttribute('aria-pressed', 'true');
+      expect(currentSearch).toBe('?view=chart');
+      expect(cards()).toHaveLength(0);
+      expect(lastRequest().get('limit')).toBe('100');
+
+      await user.click(screen.getByRole('button', { name: 'Timeline' }));
+      await waitFor(() => expect(cards()).toHaveLength(3));
+      expect(currentSearch).toBe('');
+    });
+
+    it('plots every visit in range, not just the first page', async () => {
+      mockServer(Array.from({ length: 150 }, (_, i) => buildVisit(i + 1)));
+      renderHistory('?view=chart');
+
+      expect(await screen.findByText('150 visits plotted')).toBeInTheDocument();
+      expect(historyRequests.map((p) => p.get('offset'))).toEqual(['0', '100']);
+      expect(within(await screen.findByRole('table')).getAllByRole('row')).toHaveLength(151);
+    });
+
+    it('applies the date filter to the chart and keeps the chart view', async () => {
+      renderHistory('?view=chart');
+      expect(await screen.findByText('3 visits plotted')).toBeInTheDocument();
+
+      fireEvent.change(screen.getByLabelText('From'), { target: { value: '2026-05-20' } });
+
+      expect(await screen.findByText('2 visits plotted')).toBeInTheDocument();
+      expect(lastRequest().get('startDate')).toBe('2026-05-20');
+      expect(currentSearch).toBe('?startDate=2026-05-20&view=chart');
+    });
+
+    it('shows an empty chart message for a range without visits', async () => {
+      renderHistory('?view=chart&startDate=2025-01-01&endDate=2025-01-31');
+      expect(await screen.findByText('No visits to chart in this date range.')).toBeInTheDocument();
+    });
+  });
+
   it('goes back to the patient profile', async () => {
     const user = userEvent.setup();
     renderHistory();

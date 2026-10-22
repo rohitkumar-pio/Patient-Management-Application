@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { List, type RowComponentProps } from 'react-window';
@@ -12,7 +12,13 @@ import type { Patient, Visit, VisitHistoryResponse } from '../../types';
 import './PatientProfile.scss';
 import './PatientHistory.scss';
 
+// recharts is large and only used by the optional chart view: load it on demand
+const VitalsChart = lazy(() => import('../../components/VitalsChart').then((m) => ({ default: m.VitalsChart })));
+
 export const HISTORY_PAGE_SIZE = 20;
+/** The chart plots every visit in range: fetched in API-max pages, capped */
+export const CHART_PAGE_SIZE = 100;
+export const CHART_MAX_VISITS = 1000;
 /** Above this many loaded visits, only the rows on screen are rendered */
 export const VIRTUALIZE_THRESHOLD = 50;
 
@@ -74,13 +80,19 @@ export const PatientHistory: React.FC = () => {
   const startDate = isValidDateString(startParam) ? startParam : '';
   const endDate = isValidDateString(endParam) ? endParam : '';
   const rangeError = startDate && endDate && startDate > endDate ? 'Start date must be on or before end date' : null;
+  const view = searchParams.get('view') === 'chart' ? 'chart' : 'timeline';
 
-  const setRange = (range: { startDate?: string; endDate?: string }) => {
-    const next = new URLSearchParams();
-    if (range.startDate) next.set('startDate', range.startDate);
-    if (range.endDate) next.set('endDate', range.endDate);
-    setSearchParams(next, { replace: true });
+  // URL holds the range and the view; changing one keeps the other
+  const updateParams = (next: { startDate?: string; endDate?: string; view?: 'timeline' | 'chart' }) => {
+    const params = new URLSearchParams();
+    const merged = { startDate, endDate, view, ...next };
+    if (merged.startDate) params.set('startDate', merged.startDate);
+    if (merged.endDate) params.set('endDate', merged.endDate);
+    if (merged.view === 'chart') params.set('view', 'chart');
+    setSearchParams(params, { replace: true });
   };
+  const setRange = (range: { startDate?: string; endDate?: string }) =>
+    updateParams({ startDate: range.startDate ?? '', endDate: range.endDate ?? '' });
 
   const activePreset = PRESETS.find((p) => {
     const r = p.range();
@@ -105,7 +117,27 @@ export const PatientHistory: React.FC = () => {
     initialPageParam: 0,
     getNextPageParam: (last) =>
       last.pagination.hasMore ? last.pagination.offset + last.data.length : undefined,
-    enabled: !!id && !rangeError,
+    enabled: !!id && !rangeError && view === 'timeline',
+  });
+
+  // Chart view: every visit in the range (not just the loaded timeline pages)
+  const chartData = useQuery({
+    queryKey: ['patient-history-chart', id, startDate, endDate],
+    queryFn: async () => {
+      const all: Visit[] = [];
+      let total = 0;
+      for (let offset = 0; offset < CHART_MAX_VISITS; offset += CHART_PAGE_SIZE) {
+        const params = new URLSearchParams({ limit: String(CHART_PAGE_SIZE), offset: String(offset) });
+        if (startDate) params.set('startDate', startDate);
+        if (endDate) params.set('endDate', endDate);
+        const response = await apiClient.get<VisitHistoryResponse>(`/patients/${id}/visits?${params.toString()}`);
+        all.push(...response.data.data);
+        total = response.data.pagination.total;
+        if (!response.data.pagination.hasMore) break;
+      }
+      return { visits: all, total };
+    },
+    enabled: !!id && !rangeError && view === 'chart',
   });
 
   const visits = history.data?.pages.flatMap((page) => page.data) ?? [];
@@ -122,6 +154,32 @@ export const PatientHistory: React.FC = () => {
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const renderChart = () => {
+    if (chartData.isLoading) {
+      return <div className="history-skeleton history-chart-skeleton" aria-label="Loading vitals chart" />;
+    }
+    if (chartData.isError || !chartData.data) {
+      return (
+        <div className="history-error" role="alert">
+          Couldn't load vitals. Please try again.
+        </div>
+      );
+    }
+    const { visits: chartVisits, total: chartTotal } = chartData.data;
+    return (
+      <>
+        <p className="history-count history-chart-count">
+          {chartVisits.length < chartTotal
+            ? `Plotting the latest ${chartVisits.length} of ${chartTotal} visits`
+            : `${chartTotal} ${chartTotal === 1 ? 'visit' : 'visits'} plotted`}
+        </p>
+        <Suspense fallback={<div className="history-skeleton history-chart-skeleton" aria-label="Loading vitals chart" />}>
+          <VitalsChart visits={chartVisits} />
+        </Suspense>
+      </>
+    );
   };
 
   const renderVisits = () => {
@@ -307,7 +365,21 @@ export const PatientHistory: React.FC = () => {
             </p>
           )}
 
-          {!rangeError && renderVisits()}
+          <div className="history-view-toggle" role="group" aria-label="View">
+            {(['timeline', 'chart'] as const).map((option) => (
+              <button
+                key={option}
+                type="button"
+                className={view === option ? 'active' : ''}
+                aria-pressed={view === option}
+                onClick={() => updateParams({ view: option })}
+              >
+                {option === 'timeline' ? 'Timeline' : 'Chart'}
+              </button>
+            ))}
+          </div>
+
+          {!rangeError && (view === 'chart' ? renderChart() : renderVisits())}
         </div>
       </main>
 

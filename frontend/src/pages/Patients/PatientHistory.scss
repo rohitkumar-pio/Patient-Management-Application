@@ -243,3 +243,42 @@ $timeline-gutter: 1.75rem;
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+// Timeline / Chart toggle
+.history-view-toggle {
+  display: inline-flex;
+  margin-bottom: 1rem;
+  padding: 0.1875rem;
+  border: 1px solid $color-gray-300;
+  border-radius: 0.5rem;
+  background: $color-gray-100;
+
+  button {
+    padding: 0.375rem 1rem;
+    border: none;
+    border-radius: 0.375rem;
+    background: transparent;
+    color: $color-gray-700;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    &.active {
+      background: $color-white;
+      color: $color-primary;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    }
+  }
+}
+
+.history-chart-count {
+  margin: 0 0 0.5rem;
+}
+
+.history-chart-skeleton {
+  height: 30rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(90deg, $color-gray-100 25%, $color-gray-200 50%, $color-gray-100 75%);
+  background-size: 200% 100%;
+  animation: history-shimmer 1.5s infinite;
+}
